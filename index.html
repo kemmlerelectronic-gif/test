@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Řízení lisů</title>
+
+<style>
+
+body{
+font-family:Segoe UI,Arial;
+background:#0b1220;
+color:white;
+margin:0;
+padding:20px;
+}
+
+.topbar{
+text-align:center;
+margin-bottom:15px;
+}
+
+.topbar button{
+padding:10px 20px;
+margin:5px;
+background:#22c55e;
+border:none;
+border-radius:8px;
+font-size:16px;
+color:white;
+cursor:pointer;
+}
+
+.header{
+text-align:center;
+font-size:70px;
+font-weight:bold;
+margin-bottom:20px;
+background:#374151;
+padding:15px;
+border-radius:12px;
+}
+
+.layout{
+display:grid;
+grid-template-columns:4fr 1.4fr;
+gap:25px;
+}
+
+.rowTop{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:20px;
+margin-bottom:20px;
+}
+
+.rowBottom{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:20px;
+}
+
+.card{
+background:#111827;
+padding:30px;
+border-radius:20px;
+text-align:center;
+}
+
+.lis{
+font-size:34px;
+font-weight:bold;
+margin-bottom:10px;
+}
+
+.kontakt{
+font-size:30px;
+color:#22d3ee;
+}
+
+.prurez{
+font-size:26px;
+color:#fbbf24;
+}
+
+.jmeno{
+font-size:24px;
+color:#a3e635;
+margin-top:6px;
+}
+
+.hotovo{
+margin-top:12px;
+padding:8px 16px;
+background:#ef4444;
+border:none;
+border-radius:8px;
+color:white;
+cursor:pointer;
+}
+
+.queue{
+background:#020617;
+padding:20px;
+border-radius:20px;
+}
+
+.queueItem{
+padding:10px;
+border-bottom:1px solid #1e293b;
+margin-bottom:10px;
+}
+
+.assign button{
+margin:2px;
+padding:4px 8px;
+background:#22c55e;
+border:none;
+border-radius:4px;
+color:white;
+cursor:pointer;
+font-size:12px;
+}
+
+input{
+width:100%;
+padding:8px;
+margin-bottom:6px;
+border-radius:6px;
+border:none;
+}
+
+.addBtn{
+width:100%;
+padding:10px;
+background:#3b82f6;
+border:none;
+border-radius:8px;
+color:white;
+cursor:pointer;
+}
+
+.production{
+display:none;
+}
+
+.mobile{
+display:none;
+max-width:400px;
+margin:auto;
+}
+
+.prodCard{
+background:#111827;
+padding:40px;
+border-radius:20px;
+text-align:center;
+}
+
+.prodLis{
+font-size:60px;
+font-weight:bold;
+}
+
+.prodKontakt{
+font-size:50px;
+color:#22d3ee;
+}
+
+.prodPrurez{
+font-size:42px;
+color:#fbbf24;
+}
+
+.prodJmeno{
+font-size:36px;
+color:#a3e635;
+}
+
+.blink{
+animation:blinkAnim 1s infinite;
+}
+
+@keyframes blinkAnim{
+0%{background:#22c55e}
+50%{background:#111827}
+100%{background:#22c55e}
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="setupTopbar" class="topbar">
+<button onclick="setupMode()">Nastavení</button>
+<button onclick="productionMode()">Výrobní obrazovka</button>
+</div>
+
+<div class="header" id="mainHeader">---</div>
+
+<!-- SETUP -->
+<div id="setupScreen">
+
+<div class="layout">
+
+<div>
+<div class="rowTop" id="rowTop"></div>
+<div class="rowBottom" id="rowBottom"></div>
+</div>
+
+<div class="queue">
+
+<h3>Nadcházející požadavky</h3>
+<div id="queueList"></div>
+
+<h3>Přidat požadavek</h3>
+
+<input id="kontakt" placeholder="Číslo kontaktu">
+<input id="prurez" placeholder="Průřez">
+<input id="jmeno" placeholder="Jméno">
+
+<button class="addBtn" onclick="addRequest()">Přidat</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- PRODUCTION -->
+<div id="productionScreen" class="production">
+
+<div class="layout">
+
+<div>
+<div class="rowTop" id="prodTop"></div>
+<div class="rowBottom" id="prodBottom"></div>
+</div>
+
+<div class="queue">
+<h3>Nadcházející požadavky</h3>
+<div id="prodQueue"></div>
+</div>
+
+</div>
+
+</div>
+
+<!-- MOBILE -->
+<div id="mobileScreen" class="mobile">
+
+<h2>Nový požadavek</h2>
+
+<input id="m_kontakt" placeholder="Číslo kontaktu">
+<input id="m_prurez" placeholder="Průřez">
+<input id="m_jmeno" placeholder="Jméno">
+
+<button class="addBtn" onclick="mobileAdd()">Odeslat</button>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+const firebaseConfig={
+apiKey:"AIzaSyB3OGNPAZ6NYgttFD4r6h_OLvzeWfGuzzE",
+authDomain:"lisy-system.firebaseapp.com",
+databaseURL:"https://lisy-system-default-rtdb.firebaseio.com",
+projectId:"lisy-system",
+storageBucket:"lisy-system.firebasestorage.app",
+messagingSenderId:"891198478531",
+appId:"1:891198478531:web:8d001502bf14ff7739aa76"
+}
+
+const app=initializeApp(firebaseConfig)
+const db=getDatabase(app)
+
+const LIS_COUNT=7
+
+let lisy=[]
+let pozadavky=[]
+
+function emptyLis(){
+return {kontakt:"",prurez:"",jmeno:""}
+}
+
+function render(){
+renderLisy()
+renderQueue()
+renderProduction()
+renderProductionQueue()
+}
+
+function saveLisy(){
+set(ref(db,"lisy"),lisy)
+}
+
+function addRequest(){
+
+const kontakt=document.getElementById("kontakt").value
+const prurez=document.getElementById("prurez").value
+const jmeno=document.getElementById("jmeno").value
+
+if(!kontakt) return
+
+push(ref(db,"pozadavky"),{kontakt,prurez,jmeno})
+
+}
+
+function mobileAdd(){
+
+const kontakt=document.getElementById("m_kontakt").value
+const prurez=document.getElementById("m_prurez").value
+const jmeno=document.getElementById("m_jmeno").value
+
+if(!kontakt) return
+
+push(ref(db,"pozadavky"),{kontakt,prurez,jmeno})
+
+alert("Požadavek odeslán")
+
+}
+
+function assign(req,lis){
+
+lisy[lis]={...pozadavky[req]}
+pozadavky.splice(req,1)
+
+saveLisy()
+set(ref(db,"pozadavky"),pozadavky)
+
+render()
+
+}
+
+function clearLis(i){
+
+lisy[i]=emptyLis()
+saveLisy()
+
+}
+
+function renderLisy(){
+
+const top=document.getElementById("rowTop")
+const bottom=document.getElementById("rowBottom")
+
+top.innerHTML=""
+bottom.innerHTML=""
+
+function card(i){
+
+const d=lisy[i]
+
+return `
+<div class="card">
+<div class="lis">LIS ${i+1}</div>
+
+<div class="kontakt">${d.kontakt||"---"}</div>
+<div class="prurez">${d.prurez||"---"}</div>
+<div class="jmeno">${d.jmeno||"---"}</div>
+
+<button class="hotovo" onclick="clearLis(${i})">HOTOVO</button>
+
+</div>`
+}
+
+for(let i=0;i<3;i++) top.innerHTML+=card(i)
+for(let i=3;i<7;i++) bottom.innerHTML+=card(i)
+
+}
+
+function renderProduction(){
+
+const top=document.getElementById("prodTop")
+const bottom=document.getElementById("prodBottom")
+
+if(!top) return
+
+top.innerHTML=""
+bottom.innerHTML=""
+
+function card(i){
+
+const d=lisy[i]
+
+return `
+<div class="prodCard">
+
+<div class="prodLis">LIS ${i+1}</div>
+
+<div class="prodKontakt">${d.kontakt||"---"}</div>
+<div class="prodPrurez">${d.prurez||"---"}</div>
+<div class="prodJmeno">${d.jmeno||"---"}</div>
+
+</div>`
+}
+
+for(let i=0;i<3;i++) top.innerHTML+=card(i)
+for(let i=3;i<7;i++) bottom.innerHTML+=card(i)
+
+}
+
+function renderQueue(){
+
+const q=document.getElementById("queueList")
+if(!q) return
+
+q.innerHTML=""
+
+pozadavky.forEach((p,i)=>{
+
+q.innerHTML+=`
+<div class="queueItem">
+
+<b>${p.kontakt}</b> - ${p.prurez} - ${p.jmeno}
+
+<div class="assign">
+
+<button onclick="assign(${i},0)">L1</button>
+<button onclick="assign(${i},1)">L2</button>
+<button onclick="assign(${i},2)">L3</button>
+<button onclick="assign(${i},3)">L4</button>
+<button onclick="assign(${i},4)">L5</button>
+<button onclick="assign(${i},5)">L6</button>
+<button onclick="assign(${i},6)">L7</button>
+
+</div>
+
+</div>
+`
+
+})
+
+}
+
+function renderProductionQueue(){
+
+const q=document.getElementById("prodQueue")
+if(!q) return
+
+q.innerHTML=""
+
+pozadavky.forEach(p=>{
+
+q.innerHTML+=`
+<div class="queueItem">
+<b>${p.kontakt}</b> - ${p.prurez} - ${p.jmeno}
+</div>
+`
+
+})
+
+}
+
+onValue(ref(db,"lisy"),snap=>{
+
+const data=snap.val()
+
+if(data) lisy=data
+else{
+lisy=Array.from({length:LIS_COUNT},()=>emptyLis())
+saveLisy()
+}
+
+render()
+
+})
+
+onValue(ref(db,"pozadavky"),snap=>{
+
+pozadavky=[]
+
+snap.forEach(i=>{
+pozadavky.push(i.val())
+})
+
+render()
+
+})
+
+function setupMode(){
+
+document.getElementById("setupScreen").style.display="block"
+document.getElementById("productionScreen").style.display="none"
+document.getElementById("mobileScreen").style.display="none"
+
+}
+
+function productionMode(){
+
+document.getElementById("setupScreen").style.display="none"
+document.getElementById("productionScreen").style.display="block"
+document.getElementById("mobileScreen").style.display="none"
+
+}
+
+function mobileMode(){
+
+document.getElementById("setupScreen").style.display="none"
+document.getElementById("productionScreen").style.display="none"
+document.getElementById("mobileScreen").style.display="block"
+document.getElementById("setupTopbar").style.display="none"
+
+}
+
+const params=new URLSearchParams(window.location.search)
+const mode=params.get("mode")
+
+if(mode==="production") productionMode()
+else if(mode==="mobile") mobileMode()
+else setupMode()
+
+</script>
+
+</body>
+</html>
