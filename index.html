@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Řízení lisů</title>
+<style>
+body{
+  font-family:Segoe UI,Arial;
+  background:#0b1220;
+  color:white;
+  margin:0;
+  padding:20px;
+}
+.topbar{
+  text-align:center;
+  margin-bottom:15px;
+}
+.topbar button{
+  padding:10px 20px;
+  margin:5px;
+  background:#22c55e;
+  border:none;
+  border-radius:8px;
+  font-size:16px;
+  color:white;
+  cursor:pointer;
+}
+.header{
+  text-align:center;
+  font-size:60px;
+  font-weight:bold;
+  margin-bottom:20px;
+  background:#374151;
+  padding:15px;
+  border-radius:12px;
+}
+.layout{
+  display:grid;
+  grid-template-columns:4fr 1.4fr;
+  gap:25px;
+}
+.rowTop{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px;
+  margin-bottom:20px;
+}
+.rowBottom{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:20px;
+}
+.card{
+  background:#111827;
+  padding:20px;
+  border-radius:20px;
+  text-align:center;
+}
+.lis{
+  font-size:34px;
+  font-weight:bold;
+  margin-bottom:10px;
+}
+.kontakt{
+  font-size:20px;
+  color:#22d3ee;
+}
+.prurez{
+  font-size:18px;
+  color:#fbbf24;
+}
+.jmeno{
+  font-size:16px;
+  color:#a3e635;
+  margin-top:6px;
+}
+.hotovo{
+  margin-top:12px;
+  padding:8px 16px;
+  background:#ef4444;
+  border:none;
+  border-radius:8px;
+  color:white;
+  cursor:pointer;
+}
+.queue{
+  background:#020617;
+  padding:20px;
+  border-radius:20px;
+}
+.queueTitle{
+  font-size:22px;
+  margin-bottom:10px;
+}
+.queueItem{
+  padding:10px;
+  border-bottom:1px solid #1e293b;
+  margin-bottom:10px;
+}
+.assign button{
+  margin:2px;
+  padding:4px 8px;
+  background:#22c55e;
+  border:none;
+  border-radius:4px;
+  color:white;
+  cursor:pointer;
+  font-size:12px;
+}
+.blink{
+  animation:blinkAnim 1s infinite;
+}
+@keyframes blinkAnim{
+  0%{background:#22c55e}
+  50%{background:#111827}
+  100%{background:#22c55e}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button onclick="window.location='request.html'">Přidat požadavek</button>
+</div>
+
+<div class="header" id="mainHeader">---</div>
+
+<div class="layout">
+  <div>
+    <div class="rowTop" id="rowTop"></div>
+    <div class="rowBottom" id="rowBottom"></div>
+  </div>
+  <div class="queue">
+    <div class="queueTitle">Nadcházející požadavky</div>
+    <div id="queueList"></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getDatabase, ref, onValue, remove, push } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+// Firebase konfigurace
+const firebaseConfig = {
+  apiKey: "AIzaSyDAL-bhzOd4p-Bw2BnhTysBhq2rkwUF2-0",
+  authDomain: "rizeni-lisu.firebaseapp.com",
+  databaseURL: "https://rizeni-lisu-default-rtdb.firebaseio.com",
+  projectId: "rizeni-lisu",
+  storageBucket: "rizeni-lisu.firebasestorage.app",
+  messagingSenderId: "792583151100",
+  appId: "1:792583151100:web:82a3ff4507c246b076e679"
+};
+
+// Inicializace Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const pozadavkyRef = ref(db, 'pozadavky');
+
+const LIS_COUNT = 7;
+let lisy = Array.from({length: LIS_COUNT}, () => ({kontakt:"",prurez:"",jmeno:""}));
+let pozadavky = [];
+
+// načtení a sledování změn z Firebase
+onValue(pozadavkyRef, (snapshot) => {
+  const data = snapshot.val();
+  pozadavky = data ? Object.entries(data).map(([key,val]) => ({...val, key})) : [];
+  renderQueue();
+});
+
+function renderLisy() {
+  const top = document.getElementById("rowTop");
+  const bottom = document.getElementById("rowBottom");
+  top.innerHTML = "";
+  bottom.innerHTML = "";
+
+  function card(i){
+    const d = lisy[i];
+    return `
+      <div class="card" id="lis${i}">
+        <div class="lis">LIS ${i+1}</div>
+        <div class="kontakt">${d.kontakt || "---"}</div>
+        <div class="prurez">${d.prurez || "---"}</div>
+        <div class="jmeno">${d.jmeno || "---"}</div>
+        <button class="hotovo" onclick="clearLis(${i})">HOTOVO</button>
+      </div>
+    `;
+  }
+  for(let i=0;i<3;i++) top.innerHTML+=card(i);
+  for(let i=3;i<7;i++) bottom.innerHTML+=card(i);
+}
+
+function renderQueue() {
+  const q = document.getElementById("queueList");
+  q.innerHTML = "";
+  pozadavky.forEach((p, i) => {
+    q.innerHTML += `
+      <div class="queueItem">
+        <b>${p.kontakt}</b> - ${p.prurez} - ${p.jmeno}
+        <div class="assign">
+          ${Array.from({length:LIS_COUNT},(_,j)=>`<button onclick="assign(${i},${j})">L${j+1}</button>`).join('')}
+        </div>
+      </div>
+    `;
+  });
+}
+
+function assign(reqIndex, lisIndex) {
+  lisy[lisIndex] = {kontakt: pozadavky[reqIndex].kontakt, prurez: pozadavky[reqIndex].prurez, jmeno: pozadavky[reqIndex].jmeno};
+  // odstranění z Firebase
+  remove(ref(db, 'pozadavky/' + pozadavky[reqIndex].key));
+  renderLisy();
+  updateHeader(lisIndex);
+  blinkLis(lisIndex);
+}
+
+function clearLis(i) {
+  lisy[i] = {kontakt:"",prurez:"",jmeno:""};
+  renderLisy();
+}
+
+function updateHeader(i){
+  const h = document.getElementById("mainHeader");
+  const d = lisy[i];
+  h.innerText = `${d.kontakt} - ${d.prurez} - ${d.jmeno} - LIS ${i+1}`;
+  h.classList.add("blink");
+  setTimeout(()=>h.classList.remove("blink"),10000);
+}
+
+function blinkLis(i){
+  const c = document.getElementById("lis"+i);
+  if(c) c.classList.add("blink");
+  setTimeout(()=>{ if(c) c.classList.remove("blink"); },10000);
+}
+
+// Prvotní vykreslení
+renderLisy();
+</script>
+
+</body>
+</html>

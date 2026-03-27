@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Přidat požadavek</title>
+<style>
+body {
+  font-family: Segoe UI, Arial;
+  background: #0b1220;
+  color: white;
+  margin: 0;
+  padding: 20px;
+}
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+input, button {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 6px;
+  border: none;
+  font-size: 16px;
+}
+button {
+  background: #3b82f6;
+  color: white;
+  cursor: pointer;
+}
+button:hover {
+  background: #2563eb;
+}
+.success {
+  color: #22c55e;
+  text-align: center;
+  margin-top: 10px;
+}
+</style>
+</head>
+<body>
+
+<h1>Přidat požadavek</h1>
+
+<input id="kontakt" placeholder="Číslo kontaktu">
+<input id="prurez" placeholder="Průřez">
+<input id="jmeno" placeholder="Jméno">
+
+<button id="submitBtn">Odeslat</button>
+
+<div id="msg" class="success"></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+// Firebase konfigurace
+const firebaseConfig = {
+  apiKey: "AIzaSyDAL-bhzOd4p-Bw2BnhTysBhq2rkwUF2-0",
+  authDomain: "rizeni-lisu.firebaseapp.com",
+  databaseURL: "https://rizeni-lisu-default-rtdb.firebaseio.com",
+  projectId: "rizeni-lisu",
+  storageBucket: "rizeni-lisu.firebasestorage.app",
+  messagingSenderId: "792583151100",
+  appId: "1:792583151100:web:82a3ff4507c246b076e679"
+};
+
+// Inicializace Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+document.getElementById("submitBtn").addEventListener("click", () => {
+  const kontakt = document.getElementById("kontakt").value.trim();
+  const prurez = document.getElementById("prurez").value.trim();
+  const jmeno = document.getElementById("jmeno").value.trim();
+
+  if (!kontakt || !prurez || !jmeno) {
+    alert("Vyplňte všechna pole!");
+    return;
+  }
+
+  const newRequestRef = ref(db, "pozadavky");
+  push(newRequestRef, { kontakt, prurez, jmeno })
+    .then(() => {
+      document.getElementById("msg").innerText = "Požadavek odeslán!";
+      document.getElementById("kontakt").value = "";
+      document.getElementById("prurez").value = "";
+      document.getElementById("jmeno").value = "";
+      setTimeout(() => { document.getElementById("msg").innerText = ""; }, 3000);
+    })
+    .catch((err) => {
+      alert("Chyba při odesílání: " + err);
+    });
+});
+</script>
+
+</body>
+</html>
