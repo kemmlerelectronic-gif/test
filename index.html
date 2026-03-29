@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Řízení lisů – reálný čas</title>
+<style>
+body{
+  font-family:Segoe UI,Arial;
+  background:#0b1220;
+  color:white;
+  margin:0;
+  padding:20px;
+}
+.topbarContainer{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:15px;
+}
+.topbar{
+  text-align:center;
+}
+.topbar button{
+  padding:10px 20px;
+  margin:5px;
+  background:#22c55e;
+  border:none;
+  border-radius:8px;
+  font-size:16px;
+  color:white;
+  cursor:pointer;
+}
+.kemmsTop{
+  font-size:14px;
+  color:#22c55e;
+  font-weight:bold;
+  margin-left:10px;
+}
+.header{
+  text-align:center;
+  font-size:90px;
+  font-weight:bold;
+  margin-bottom:20px;
+  background:#374151;
+  padding:15px;
+  border-radius:12px;
+}
+.layout{
+  display:grid;
+  grid-template-columns:4fr 1.4fr;
+  gap:25px;
+}
+.rowTop{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px;
+  margin-bottom:20px;
+}
+.rowBottom{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:20px;
+  position:relative;
+}
+.card{
+  background:#111827;
+  padding:30px;
+  border-radius:20px;
+  text-align:center;
+  transition: transform 0.3s, box-shadow 0.3s, background 1s;
+  position: relative;
+}
+.card.active{
+  box-shadow: 0 0 30px #22c55e;
+  transform: scale(1.05);
+  background:#22c55e;
+}
+.card.assigned{
+  background:#22c55e33;
+}
+.lis{
+  font-size:34px;
+  font-weight:bold;
+  margin-bottom:10px;
+}
+.kontakt{
+  font-size:30px;
+  color:#22d3ee;
+}
+.prurez{
+  font-size:26px;
+  color:#fbbf24;
+}
+.jmeno{
+  font-size:24px;
+  color:#a3e635;
+  margin-top:6px;
+}
+.hotovo{
+  margin-top:12px;
+  padding:8px 16px;
+  background:#ef4444;
+  border:none;
+  border-radius:8px;
+  color:white;
+  cursor:pointer;
+}
+.queue{
+  background:#020617;
+  padding:20px;
+  border-radius:20px;
+  transition: background 0.3s;
+}
+.queue.blinkRed{
+  animation: blinkRed 3s;
+}
+@keyframes blinkRed{
+  0%{background:#ef4444;}
+  50%{background:#020617;}
+  100%{background:#ef4444;}
+}
+.queueTitle{
+  font-size:22px;
+  margin-bottom:10px;
+}
+.queueItem{
+  padding:10px;
+  border-bottom:1px solid #1e293b;
+  margin-bottom:10px;
+}
+.assign button{
+  margin:2px;
+  padding:4px 8px;
+  background:#22c55e;
+  border:none;
+  border-radius:4px;
+  color:white;
+  cursor:pointer;
+  font-size:12px;
+}
+input{
+  width:100%;
+  padding:8px;
+  margin-bottom:6px;
+  border-radius:6px;
+  border:none;
+}
+.addBtn{
+  width:100%;
+  padding:10px;
+  background:#3b82f6;
+  border:none;
+  border-radius:8px;
+  color:white;
+  cursor:pointer;
+}
+.production{
+  display:none;
+}
+.blink{
+  animation:blinkAnim 1s infinite;
+}
+@keyframes blinkAnim{
+  0%{background:#22c55e}
+  50%{background:#111827}
+  100%{background:#22c55e}
+}
+</style>
+</head>
+<body>
+
+<div class="topbarContainer">
+  <div class="kemmsTop">KEMMSOFT BETA 3</div>
+  <div class="topbar" id="topbar">
+    <button onclick="setupMode()">Nastavení</button>
+    <button onclick="productionMode()">Výrobní obrazovka</button>
+    <button onclick="requestsMode()">Zadání požadavku</button>
+  </div>
+</div>
+
+<div class="header" id="mainHeader">---</div>
+
+<!-- Nastavení a Výroba -->
+<div id="setupScreen">
+  <div class="layout">
+    <div>
+      <div class="rowTop" id="rowTop"></div>
+      <div class="rowBottom" id="rowBottom"></div>
+    </div>
+    <div class="queue" id="queueDiv">
+      <div class="queueTitle">Nadcházející požadavky</div>
+      <div id="queueList"></div>
+    </div>
+  </div>
+</div>
+
+<div id="productionScreen" class="production">
+  <div class="layout">
+    <div>
+      <div class="rowTop" id="prodTop"></div>
+      <div class="rowBottom" id="prodBottom"></div>
+    </div>
+    <div class="queue" id="prodQueueDiv">
+      <div class="queueTitle">Nadcházející požadavky</div>
+      <div id="prodQueue"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Zadání požadavku -->
+<div id="requestsScreen" class="production">
+  <div style="max-width:420px;margin:0 auto;">
+    <h3>Zadání požadavku</h3>
+    <input id="kontakt" placeholder="Číslo kontaktu">
+    <input id="prurez" placeholder="Průřez">
+    <input id="jmeno" placeholder="Jméno">
+    <button class="addBtn" onclick="addRequest()">Odeslat</button>
+  </div>
+</div>
+
+<script>
+// --- Data ---
+const LIS_COUNT = 7;
+let lisy=[], pozadavky=[];
+
+function emptyLis(){ return {kontakt:"",prurez:"",jmeno:""} }
+
+function load(){
+  const l = JSON.parse(localStorage.getItem("lisy"));
+  const p = JSON.parse(localStorage.getItem("pozadavky"));
+  lisy = l && l.length===LIS_COUNT ? l : Array.from({length:LIS_COUNT},()=>emptyLis());
+  pozadavky = p||[];
+}
+
+function save(){
+  localStorage.setItem("lisy",JSON.stringify(lisy));
+  localStorage.setItem("pozadavky",JSON.stringify(pozadavky));
+  render();
+}
+
+function render(){
+  renderLisy();
+  renderQueue();
+  renderProduction();
+  renderProductionQueue();
+}
+
+function renderLisy(){
+  const top=document.getElementById("rowTop"), bottom=document.getElementById("rowBottom");
+  top.innerHTML=""; bottom.innerHTML="";
+  for(let i=0;i<3;i++) top.innerHTML+=lisCard(i);
+  for(let i=3;i<7;i++) bottom.innerHTML+=lisCard(i);
+  
+  function lisCard(i){
+    const d=lisy[i];
+    return `<div class="card ${d.kontakt?"assigned":""}" id="lis${i}">
+      <div class="lis">LIS ${i+1}</div>
+      <div class="kontakt">${d.kontakt||"---"}</div>
+      <div class="prurez">${d.prurez||"---"}</div>
+      <div class="jmeno">${d.jmeno||"---"}</div>
+      <button class="hotovo" onclick="clearLis(${i})">HOTOVO</button>
+    </div>`;
+  }
+}
+
+function renderProduction(){
+  const top=document.getElementById("prodTop"), bottom=document.getElementById("prodBottom");
+  top.innerHTML=""; bottom.innerHTML="";
+  for(let i=0;i<3;i++) top.innerHTML+=prodCard(i);
+  for(let i=3;i<7;i++) bottom.innerHTML+=prodCard(i);
+  
+  function prodCard(i){
+    const d=lisy[i];
+    return `<div class="card ${d.kontakt?"assigned":""}" id="prodLis${i}">
+      <div class="lis">LIS ${i+1}</div>
+      <div class="kontakt">${d.kontakt||"---"}</div>
+      <div class="prurez">${d.prurez||"---"}</div>
+      <div class="jmeno">${d.jmeno||"---"}</div>
+    </div>`;
+  }
+}
+
+function renderQueue(){
+  const q=document.getElementById("queueList");
+  q.innerHTML="";
+  pozadavky.forEach((p,i)=>{
+    q.innerHTML+=`<div class="queueItem" id="queueItem${i}">
+      <b>${p.kontakt}</b> - ${p.prurez} - ${p.jmeno}
+      <div class="assign">
+        ${[0,1,2,3,4,5,6].map(lis=>`<button onclick="assign(${i},${lis})">L${lis+1}</button>`).join('')}
+      </div>
+    </div>`;
+  });
+}
+
+function renderProductionQueue(){
+  const q=document.getElementById("prodQueue");
+  if(!q) return;
+  q.innerHTML="";
+  pozadavky.forEach(p=>{
+    q.innerHTML+=`<div class="queueItem">
+      <b>${p.kontakt}</b> - ${p.prurez} - ${p.jmeno}
+    </div>`;
+  });
+}
+
+function addRequest(){
+  const kontakt=document.getElementById("kontakt").value;
+  const prurez=document.getElementById("prurez").value;
+  const jmeno=document.getElementById("jmeno").value;
+  if(!kontakt) return;
+  pozadavky.push({kontakt,prurez,jmeno});
+  document.getElementById("kontakt").value="";
+  document.getElementById("prurez").value="";
+  document.getElementById("jmeno").value="";
+  
+  const queueDiv=document.getElementById("queueDiv");
+  queueDiv.classList.add("blinkRed");
+  setTimeout(()=>queueDiv.classList.remove("blinkRed"),3000);
+
+  save();
+}
+
+function assign(req,lis){
+  lisy[lis]={...pozadavky[req]};
+  pozadavky.splice(req,1);
+  save();
+  autoBlink(lis);
+}
+
+function autoBlink(i){
+  const card=document.getElementById("lis"+i);
+  const prodCard=document.getElementById("prodLis"+i);
+  
+  [card,prodCard].forEach(c=>c?.classList.add("active"));
+  playTone();
+  
+  setTimeout(()=>{
+    [card,prodCard].forEach(c=>{
+      c?.classList.remove("active");
+      c?.classList.add("assigned");
+    });
+  },1000);
+  
+  updateHeader(i);
+}
+
+function updateHeader(i){
+  const h=document.getElementById("mainHeader");
+  const d=lisy[i];
+  h.innerText=`${d.kontakt} - ${d.prurez} - ${d.jmeno} - LIS ${i+1}`;
+  h.classList.add("blink");
+  setTimeout(()=>h.classList.remove("blink"),1000);
+}
+
+function clearLis(i){
+  lisy[i]=emptyLis();
+  const card=document.getElementById("lis"+i);
+  const prodCard=document.getElementById("prodLis"+i);
+  [card,prodCard].forEach(c=>c?.classList.remove("assigned"));
+  save();
+}
+
+function playTone(){
+  const ctx=new(window.AudioContext||window.webkitAudioContext)();
+  [[1000,0,0.2],[700,0.3,0.3]].forEach(([f,t,d])=>{
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.frequency.value=f;
+    o.connect(g); g.connect(ctx.destination);
+    o.start(ctx.currentTime+t); o.stop(ctx.currentTime+t+d);
+  });
+  setTimeout(()=>ctx.close(),1000);
+}
+
+// --- REŽIMY ---
+function setupMode(){
+  document.getElementById("setupScreen").style.display="block";
+  document.getElementById("productionScreen").style.display="none";
+  document.getElementById("requestsScreen").style.display="none";
+  document.getElementById("mainHeader").style.display="block";
+  document.getElementById("topbar").style.display="block";
+}
+function productionMode(){
+  document.getElementById("setupScreen").style.display="none";
+  document.getElementById("productionScreen").style.display="block";
+  document.getElementById("requestsScreen").style.display="none";
+  document.getElementById("mainHeader").style.display="block";
+  document.getElementById("topbar").style.display="block";
+}
+function requestsMode(){
+  document.getElementById("setupScreen").style.display="none";
+  document.getElementById("productionScreen").style.display="none";
+  document.getElementById("requestsScreen").style.display="block";
+  document.getElementById("mainHeader").style.display="none"; 
+  document.getElementById("topbar").style.display="none";    
+}
+
+// --- OTEVŘENÍ ZADÁNÍ POŽADAVKU PŘES URL ?pozadavky ---
+window.addEventListener("load",()=>{ 
+  if(window.location.search.includes("pozadavky")) requestsMode();
+});
+
+window.addEventListener("storage",()=>{load(); render();});
+load(); render();
+
+// --- AUTOMATICKÝ REFRESH BYL ZRUŠEN ---
+</script>
+
+</body>
+</html>
