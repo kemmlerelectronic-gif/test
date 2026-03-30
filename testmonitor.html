@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Řízení lisů – reálný čas</title>
+
+<style>
+
+body{
+font-family:Segoe UI,Arial;
+background:#0b1220;
+color:white;
+margin:0;
+padding:1vw;
+font-size:1.2vw;
+}
+
+.topbarContainer{
+display:flex;
+align-items:center;
+justify-content:space-between;
+margin-bottom:1vw;
+}
+
+.topbar{text-align:center;}
+
+.topbar button{
+padding:0.6vw 1.2vw;
+margin:0.3vw;
+background:#22c55e;
+border:none;
+border-radius:0.6vw;
+font-size:1vw;
+color:white;
+cursor:pointer;
+}
+
+.kemmsTop{
+font-size:2vw;
+color:#32c65e;
+font-weight:bold;
+margin-left:0.5vw;
+}
+
+.header{
+text-align:center;
+font-size:5vw;
+font-weight:bold;
+margin-bottom:1vw;
+background:#374151;
+padding:1vw;
+border-radius:1vw;
+}
+
+.layout{
+display:grid;
+grid-template-columns:4fr 1.4fr;
+gap:1.2vw;
+}
+
+.rowTop{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:1vw;
+margin-bottom:1vw;
+}
+
+.rowBottom{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:1vw;
+}
+
+.card{
+background:#111827;
+padding:1.5vw;
+border-radius:1.2vw;
+text-align:center;
+transition: transform 0.3s, box-shadow 0.3s, background 1s;
+}
+
+.card.active{
+box-shadow:0 0 2vw #22c55e;
+transform:scale(1.05);
+background:#22c55e;
+}
+
+.card.assigned{
+background:#22c55e33;
+}
+
+.lis{
+font-size:2vw;
+font-weight:bold;
+margin-bottom:0.5vw;
+}
+
+.kontakt{
+font-size:1.8vw;
+color:#22d3ee;
+}
+
+.prurez{
+font-size:1.5vw;
+color:#fbbf24;
+}
+
+.jmeno{
+font-size:1.3vw;
+color:#a3e635;
+margin-top:0.3vw;
+}
+
+.time{
+font-size:1vw;
+color:#ccc;
+margin-top:0.2vw;
+}
+
+.hotovo{
+margin-top:0.6vw;
+padding:0.4vw 0.8vw;
+background:#ef4444;
+border:none;
+border-radius:0.5vw;
+color:white;
+cursor:pointer;
+font-size:0.9vw;
+}
+
+.queue{
+background:#020617;
+padding:1vw;
+border-radius:1vw;
+}
+
+.queueTitle{
+font-size:1.4vw;
+margin-bottom:0.6vw;
+}
+
+.queueItem{
+padding:0.6vw;
+border-bottom:1px solid #1e293b;
+margin-bottom:0.6vw;
+font-size:1vw;
+}
+
+.assign button{
+margin:0.2vw;
+padding:0.2vw 0.5vw;
+background:#22c55e;
+border:none;
+border-radius:0.3vw;
+color:white;
+cursor:pointer;
+font-size:0.8vw;
+}
+
+input{
+width:100%;
+padding:0.5vw;
+margin-bottom:0.4vw;
+border-radius:0.4vw;
+border:none;
+font-size:1vw;
+}
+
+.addBtn{
+width:100%;
+padding:0.6vw;
+background:#3b82f6;
+border:none;
+border-radius:0.6vw;
+color:white;
+cursor:pointer;
+font-size:1vw;
+}
+
+.production{display:none;}
+
+.blink{animation:blinkAnim 1s infinite;}
+
+@keyframes blinkAnim{
+0%{background:#22c55e}
+50%{background:#111827}
+100%{background:#22c55e}
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="topbarContainer">
+<div class="kemmsTop">KEMMSOFT BETA 3.1</div>
+
+<div class="topbar">
+<button onclick="setupMode()">Nastavení</button>
+<button onclick="productionMode()">Výrobní obrazovka</button>
+<button onclick="requestsMode()">Zadání požadavku</button>
+</div>
+</div>
+
+<div class="header" id="mainHeader">---</div>
+
+<div id="setupScreen">
+<div class="layout">
+
+<div>
+<div class="rowTop" id="rowTop"></div>
+<div class="rowBottom" id="rowBottom"></div>
+</div>
+
+<div class="queue">
+<div class="queueTitle">Nadcházející požadavky</div>
+<div id="queueList"></div>
+
+<h4>Přidat nový požadavek</h4>
+
+<input id="setupKontakt" placeholder="Číslo kontaktu">
+<input id="setupPrurez" placeholder="Průřez">
+<input id="setupJmeno" placeholder="Jméno">
+
+<button class="addBtn" onclick="addRequestSetup()">Odeslat</button>
+
+</div>
+</div>
+</div>
+
+<div id="productionScreen" class="production">
+<div class="layout">
+
+<div>
+<div class="rowTop" id="prodTop"></div>
+<div class="rowBottom" id="prodBottom"></div>
+</div>
+
+<div class="queue">
+<div class="queueTitle">Nadcházející požadavky</div>
+<div id="prodQueue"></div>
+</div>
+
+</div>
+</div>
+
+<div id="requestsScreen" class="production">
+
+<div style="max-width:30vw;margin:0 auto;">
+
+<h3>Zadání požadavku</h3>
+
+<input id="kontakt" placeholder="Číslo kontaktu">
+<input id="prurez" placeholder="Průřez">
+<input id="jmeno" placeholder="Jméno">
+
+<button class="addBtn" onclick="addRequest()">Odeslat</button>
+
+</div>
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getDatabase, ref, push, set, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyAhiCfh-Di_NdPO5rGM7CZFQGaSymcdWxI",
+authDomain: "lisyweb-df6d9.firebaseapp.com",
+databaseURL: "https://lisyweb-df6d9-default-rtdb.firebaseio.com/",
+projectId: "lisyweb-df6d9",
+storageBucket: "lisyweb-df6d9.firebasestorage.app",
+messagingSenderId: "798030762865",
+appId: "1:798030762865:web:14786bb2fb4ac6211d1cd0"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const LIS_COUNT = 7;
+
+let lisy=[];
+let pozadavky=[];
+let lastLisy=[];
+
+function emptyLis(){
+return {kontakt:"",prurez:"",jmeno:"",time:""}
+}
+
+onValue(ref(db,'lisy'),snapshot=>{
+
+const data=snapshot.val();
+
+lisy=data?Object.values(data):Array.from({length:LIS_COUNT},()=>emptyLis());
+
+lisy.forEach((lis,i)=>{
+const old=lastLisy[i];
+if(lis.kontakt && (!old || old.kontakt!==lis.kontakt)){
+autoBlink(i);
+}
+});
+
+lastLisy=JSON.parse(JSON.stringify(lisy));
+
+renderLisy();
+renderProduction();
+
+});
+
+onValue(ref(db,'pozadavky'),snapshot=>{
+
+const data=snapshot.val();
+
+pozadavky=data?Object.entries(data).map(([key,val])=>({...val,key})).sort((a,b)=>a.time-b.time):[];
+
+renderQueue();
+renderProductionQueue();
+
+});
+
+function renderLisy(){
+
+const top=document.getElementById("rowTop");
+const bottom=document.getElementById("rowBottom");
+
+top.innerHTML="";
+bottom.innerHTML="";
+
+for(let i=0;i<3;i++)top.innerHTML+=card(i);
+for(let i=3;i<7;i++)bottom.innerHTML+=card(i);
+
+function card(i){
+
+const d=lisy[i]||emptyLis();
+
+return `<div class="card ${d.kontakt?"assigned":""}" id="lis${i}">
+<div class="lis">LIS ${i+1}</div>
+<div class="kontakt">${d.kontakt||"---"}</div>
+<div class="prurez">${d.prurez||"---"}</div>
+<div class="jmeno">${d.jmeno||"---"}</div>
+<div class="time">${d.time?new Date(d.time).toLocaleTimeString():""}</div>
+<button class="hotovo" onclick="clearLis(${i})">HOTOVO</button>
+</div>`;
+
+}
+
+}
+
+function renderProduction(){
+
+const top=document.getElementById("prodTop");
+const bottom=document.getElementById("prodBottom");
+
+top.innerHTML="";
+bottom.innerHTML="";
+
+for(let i=0;i<3;i++)top.innerHTML+=card(i);
+for(let i=3;i<7;i++)bottom.innerHTML+=card(i);
+
+function card(i){
+
+const d=lisy[i]||emptyLis();
+
+return `<div class="card ${d.kontakt?"assigned":""}" id="prodLis${i}">
+<div class="lis">LIS ${i+1}</div>
+<div class="kontakt">${d.kontakt||"---"}</div>
+<div class="prurez">${d.prurez||"---"}</div>
+<div class="jmeno">${d.jmeno||"---"}</div>
+<div class="time">${d.time?new Date(d.time).toLocaleTimeString():""}</div>
+</div>`;
+
+}
+
+}
+
+function renderQueue(){
+
+const q=document.getElementById("queueList");
+q.innerHTML="";
+
+pozadavky.forEach((p,i)=>{
+
+q.innerHTML+=`<div class="queueItem">
+<b>${p.kontakt}</b> - ${p.prurez} - ${p.jmeno}
+<div class="assign">
+${[0,1,2,3,4,5,6].map(l=>`<button onclick="assignFIFO(${l})">L${l+1}</button>`).join('')}
+</div>
+</div>`;
+
+});
+
+}
+
+function renderProductionQueue(){
+
+const q=document.getElementById("prodQueue");
+if(!q)return;
+
+q.innerHTML="";
+
+pozadavky.forEach(p=>{
+q.innerHTML+=`<div class="queueItem">
+<b>${p.kontakt}</b> - ${p.prurez} - ${p.jmeno}
+</div>`;
+});
+
+}
+
+window.addRequest=function(){
+
+const kontakt=document.getElementById("kontakt").value;
+const prurez=document.getElementById("prurez").value;
+const jmeno=document.getElementById("jmeno").value;
+
+if(!kontakt)return;
+
+const newRef=push(ref(db,'pozadavky'));
+
+set(newRef,{
+kontakt,
+prurez,
+jmeno,
+time:Date.now()
+});
+
+}
+
+window.addRequestSetup=function(){
+
+const kontakt=document.getElementById("setupKontakt").value;
+const prurez=document.getElementById("setupPrurez").value;
+const jmeno=document.getElementById("setupJmeno").value;
+
+if(!kontakt)return;
+
+const newRef=push(ref(db,'pozadavky'));
+
+set(newRef,{
+kontakt,
+prurez,
+jmeno,
+time:Date.now()
+});
+
+}
+
+window.assignFIFO=function(lisIndex){
+
+if(pozadavky.length===0)return;
+
+const p=pozadavky[0];
+
+set(ref(db,`lisy/${lisIndex}`),{
+kontakt:p.kontakt,
+prurez:p.prurez,
+jmeno:p.jmeno,
+time:Date.now()
+});
+
+remove(ref(db,`pozadavky/${p.key}`));
+
+}
+
+window.clearLis=function(i){
+set(ref(db,`lisy/${i}`),emptyLis());
+}
+
+function autoBlink(i){
+
+const card=document.getElementById("lis"+i);
+const prod=document.getElementById("prodLis"+i);
+
+[card,prod].forEach(c=>c?.classList.add("active"));
+
+playTone();
+
+setTimeout(()=>{
+
+[card,prod].forEach(c=>{
+c?.classList.remove("active");
+c?.classList.add("assigned");
+});
+
+},1000);
+
+updateHeader(i);
+
+}
+
+function updateHeader(i){
+
+const h=document.getElementById("mainHeader");
+const d=lisy[i];
+
+h.innerText=`${d.kontakt} - ${d.prurez} - ${d.jmeno} - LIS ${i+1}`;
+
+h.classList.add("blink");
+
+setTimeout(()=>h.classList.remove("blink"),1000);
+
+}
+
+function playTone(){
+
+const ctx=new(window.AudioContext||window.webkitAudioContext)();
+
+const o=ctx.createOscillator();
+const g=ctx.createGain();
+
+o.frequency.value=1000;
+
+o.connect(g);
+g.connect(ctx.destination);
+
+o.start();
+o.stop(ctx.currentTime+0.3);
+
+}
+
+window.setupMode=function(){
+setupScreen.style.display="block";
+productionScreen.style.display="none";
+requestsScreen.style.display="none";
+}
+
+window.productionMode=function(){
+setupScreen.style.display="none";
+productionScreen.style.display="block";
+requestsScreen.style.display="none";
+}
+
+window.requestsMode=function(){
+setupScreen.style.display="none";
+productionScreen.style.display="none";
+requestsScreen.style.display="block";
+}
+
+</script>
+
+</body>
+</html>
