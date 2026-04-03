@@ -153,6 +153,8 @@ cursor:pointer;
 background:#020617dd;
 padding:20px;
 border-radius:18px;
+max-height:80vh;
+overflow-y:auto;
 }
 
 .queueItem{
@@ -199,16 +201,17 @@ top:0;
 left:0;
 width:100%;
 height:100%;
-background:rgba(0,0,0,0.9);
+background:rgba(0,0,0,0.92);
 display:flex;
 align-items:center;
 justify-content:center;
-font-size:70px;
+font-size:90px;
 font-weight:bold;
 color:#22c55e;
-z-index:10;
-display:none;
+z-index:100;
 text-align:center;
+padding:40px;
+display:none;
 }
 
 .screen{display:none}
@@ -295,32 +298,11 @@ let pozadavky=[];
 function emptyLis(){ return {kontakt:"",prurez:"",jmeno:"",time:""} }
 function timeNow(){ return new Date().toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'}) }
 
-let lastTimes = Array(LIS_COUNT).fill("");
-
 onValue(ref(db,'lisy'),snap=>{
-
-const data=snap.val();
-lisy=data?Object.values(data):Array.from({length:LIS_COUNT},()=>emptyLis());
-
-lisy.forEach((l,i)=>{
-
-if(l.time && l.time !== lastTimes[i]){
-
-lastTimes[i] = l.time;
-
-const text = `${l.kontakt} - ${l.prurez} - ${l.jmeno} → LIS ${i+1}`;
-
-document.getElementById("mainHeader").innerText = text;
-
-popup(text);
-tone();
-
-}
-
-});
-
-renderAll();
-
+  const data=snap.val();
+  lisy=data ? Object.values(data) : Array.from({length:LIS_COUNT},()=>emptyLis());
+  while(lisy.length<LIS_COUNT) lisy.push(emptyLis()); // doplníme LISy
+  renderAll();
 });
 
 onValue(ref(db,'pozadavky'),snap=>{
@@ -330,31 +312,12 @@ onValue(ref(db,'pozadavky'),snap=>{
 });
 
 function renderAll(){
-
-renderLisy("setupTop","setupBottom",true);
-renderLisy("prodTop","prodBottom",false);
-
-renderQueue("setupQueue",true);
-renderQueue("prodQueue",false);
-
-updateHeader();
-
+  renderLisy("setupTop","setupBottom",true);
+  renderLisy("prodTop","prodBottom",false);
+  renderQueue("setupQueue",true);
+  renderQueue("prodQueue",false);
 }
 
-function updateHeader(){
-
-let last = null;
-
-lisy.forEach((l,i)=>{
-if(l.kontakt){
-last = `${l.kontakt} - ${l.prurez} - ${l.jmeno} → LIS ${i+1}`;
-}
-});
-
-document.getElementById("mainHeader").innerText = last || "---";
-
-}
-    
 function renderLisy(topID,bottomID,setup){
   const top=document.getElementById(topID);
   const bottom=document.getElementById(bottomID);
@@ -475,7 +438,23 @@ window.showScreen=function(id){
 }
 
 showScreen("setup");
+setInterval(()=>{
 
+const production = document.getElementById("production");
+
+if(production.style.display !== "block") return;
+
+const q = production.querySelector(".queue");
+
+if(!q) return;
+
+q.scrollTop += 1;
+
+if(q.scrollTop + q.clientHeight >= q.scrollHeight){
+q.scrollTop = 0;
+}
+
+},100);
 </script>
 </body>
 </html>
