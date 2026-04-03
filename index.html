@@ -295,11 +295,32 @@ let pozadavky=[];
 function emptyLis(){ return {kontakt:"",prurez:"",jmeno:"",time:""} }
 function timeNow(){ return new Date().toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'}) }
 
+let lastTimes = Array(LIS_COUNT).fill("");
+
 onValue(ref(db,'lisy'),snap=>{
-  const data=snap.val();
-  lisy=data ? Object.values(data) : Array.from({length:LIS_COUNT},()=>emptyLis());
-  while(lisy.length<LIS_COUNT) lisy.push(emptyLis()); // doplníme LISy
-  renderAll();
+
+const data=snap.val();
+lisy=data?Object.values(data):Array.from({length:LIS_COUNT},()=>emptyLis());
+
+lisy.forEach((l,i)=>{
+
+if(l.time && l.time !== lastTimes[i]){
+
+lastTimes[i] = l.time;
+
+const text = `${l.kontakt} - ${l.prurez} - ${l.jmeno} → LIS ${i+1}`;
+
+document.getElementById("mainHeader").innerText = text;
+
+popup(text);
+tone();
+
+}
+
+});
+
+renderAll();
+
 });
 
 onValue(ref(db,'pozadavky'),snap=>{
