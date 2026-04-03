@@ -433,8 +433,22 @@ function tone(){
 }
 
 window.showScreen=function(id){
-  document.querySelectorAll(".screen").forEach(s=>s.style.display="none");
-  document.getElementById(id).style.display="block";
+
+    document.querySelectorAll(".screen").forEach(s=>s.style.display="none");
+    document.getElementById(id).style.display="block";
+
+    // AKTUALIZACE BANNERU POUZE NA VÝROBNÍ OBRAZOVCE
+    if(id === "production"){
+        let last = null;
+        lisy.forEach((l,i)=>{
+            if(l.kontakt){
+                last = `${l.kontakt} - ${l.prurez} - ${l.jmeno} → LIS ${i+1}`;
+            }
+        });
+        document.getElementById("mainHeader").innerText = last || "---";
+    } else {
+        document.getElementById("mainHeader").innerText = "---";
+    }
 }
 
 showScreen("setup");
