@@ -309,12 +309,31 @@ onValue(ref(db,'pozadavky'),snap=>{
 });
 
 function renderAll(){
-  renderLisy("setupTop","setupBottom",true);
-  renderLisy("prodTop","prodBottom",false);
-  renderQueue("setupQueue",true);
-  renderQueue("prodQueue",false);
+
+renderLisy("setupTop","setupBottom",true);
+renderLisy("prodTop","prodBottom",false);
+
+renderQueue("setupQueue",true);
+renderQueue("prodQueue",false);
+
+updateHeader();
+
 }
 
+function updateHeader(){
+
+let last = null;
+
+lisy.forEach((l,i)=>{
+if(l.kontakt){
+last = `${l.kontakt} - ${l.prurez} - ${l.jmeno} → LIS ${i+1}`;
+}
+});
+
+document.getElementById("mainHeader").innerText = last || "---";
+
+}
+    
 function renderLisy(topID,bottomID,setup){
   const top=document.getElementById(topID);
   const bottom=document.getElementById(bottomID);
