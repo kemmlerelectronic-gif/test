@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
-<title>KEMMSOFT 4.0 Testing</title>
+<title>KEMMSOFT 4.2.2 Testing</title>
 <style>
 /* Základní styly */
 body{
@@ -473,7 +473,7 @@ display:none;
 <body>
 
 <div class="topbar" id="mainTopbar">
-<div class="logo">KEMMSOFT 4.0.1 Testing</div>
+<div class="logo">KEMMSOFT 4.0 Testing</div>
 <div class="nav">
 <button onclick="showScreen('setup')">Nastavení</button>
 <button onclick="showScreen('production')">Výrobní obrazovka</button>
@@ -548,8 +548,6 @@ const LIS_COUNT=7;
 let lisy=[];
 let pozadavky = [];
 let lastLisy = [];
-//lastPozadavky už nepotřebujeme, protože renderQueue teď spravuje DOM dynamicky
-//let lastPozadavky = []; 
 
 function emptyLis(){ return {kontakt:"",prurez:"",jmeno:"",time:""} }
 function timeNow(){ return new Date().toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'}) }
@@ -593,7 +591,7 @@ onValue(ref(db,'pozadavky'),snap=>{
   const data=snap.val();
   pozadavky = data ? Object.entries(data).map(([k,v])=>({...v,key:k})) : [];
   
-  renderAll(); // renderAll nyní volá novou dynamickou renderQueue
+  renderAll(); 
 });
 
 function renderAll(){
@@ -631,20 +629,26 @@ function renderQueue(id,setup){
   const currentScreen = document.querySelector(".screen:not([style*='display: none'])")?.id;
 
   // Získání aktuálních klíčů požadavků z DOMu
-  const existingRequestElements = Array.from(queueElement.children);
-  const existingRequestKeys = new Set(existingRequestElements.map(el => el.id.replace('request-', '')));
+  // Vytvoříme Mapu pro snadnější vyhledávání
+  const existingRequestMap = new Map();
+  Array.from(queueElement.children).forEach(el => {
+      if (el.id.startsWith('request-')) {
+          existingRequestMap.set(el.id.replace('request-', ''), el);
+      }
+  });
 
   // Projdeme aktuální požadavky z Firebase
   let index = 0;
   for (const p of pozadavky) {
     const requestKey = p.key;
-    let requestEl = document.getElementById(`request-${requestKey}`);
+    let requestEl = existingRequestMap.get(requestKey);
 
     // Pokud element neexistuje, vytvoříme ho
     if (!requestEl) {
       requestEl = document.createElement('div');
       requestEl.className = 'queueItem';
       requestEl.id = `request-${requestKey}`;
+      
       // Vložíme na správné místo
       if (index < queueElement.children.length) {
         queueElement.insertBefore(requestEl, queueElement.children[index]);
@@ -653,14 +657,16 @@ function renderQueue(id,setup){
       }
       
       // Spustíme animaci pouze pro nově přidaný prvek a na správných obrazovkách
+      // Nyní se animace spouští na obou obrazovkách 'setup' i 'production'
       if ((currentScreen === "setup" || currentScreen === "production")) {
           setTimeout(() => { // Krátká prodleva pro vykreslení elementu v DOMu
-              if (requestEl && !requestEl.classList.contains('new-request-pulse')) {
+              if (requestEl && !requestEl.classList.contains('new-request-pulse')) { 
                   requestEl.classList.add('new-request-pulse');
+                  // Použijeme onanimationend pro robustnější odstranění třídy
                   requestEl.addEventListener('animationend', function handler() {
                       requestEl.classList.remove('new-request-pulse');
                       requestEl.removeEventListener('animationend', handler);
-                  }, { once: true }); // Použijeme { once: true }, aby se handler spustil jen jednou
+                  }, { once: true }); 
               }
           }, 50); // Mírně zkrácená prodleva
       }
@@ -669,7 +675,7 @@ function renderQueue(id,setup){
         if (queueElement.children[index] !== requestEl) {
             queueElement.insertBefore(requestEl, queueElement.children[index]);
         }
-        existingRequestKeys.delete(requestKey); // Označíme, že tento prvek byl zpracován
+        existingRequestMap.delete(requestKey); // Označíme, že tento prvek byl zpracován
     }
 
     // Aktualizujeme obsah elementu
@@ -686,7 +692,7 @@ function renderQueue(id,setup){
   }
 
   // Odebereme prvky, které už v Firebase nejsou
-  for (const keyToRemove of existingRequestKeys) {
+  for (const keyToRemove of existingRequestMap.keys()) {
     const elToRemove = document.getElementById(`request-${keyToRemove}`);
     if (elToRemove) {
       elToRemove.remove();
@@ -694,18 +700,17 @@ function renderQueue(id,setup){
   }
 }
 
-window.assign=async function(lisIndex,requestKey){ // requestKey místo reqIndex
-  const p = pozadavky.find(req => req.key === requestKey); // Najdeme požadavek podle klíče
+window.assign=async function(lisIndex,requestKey){ 
+  const p = pozadavky.find(req => req.key === requestKey); 
   if (!p) return;
 
   const currentScreen = document.querySelector(".screen:not([style*='display: none'])")?.id;
   const targetElement = document.getElementById(`lis${lisIndex}`);
 
-  // Animace pro aktuální zařízení, kde dochází k přiřazení
   if (currentScreen === "production" && targetElement) {
       await animateFlyingRequestFullscreen(targetElement, p);
   } else {
-      const sourceElement = document.getElementById(`request-${p.key}`); // Zdrojový element ve frontě
+      const sourceElement = document.getElementById(`request-${p.key}`); 
       if (sourceElement && targetElement) {
           await animateFlyingRequest(sourceElement, targetElement, p);
       } else if (targetElement) { 
@@ -713,7 +718,6 @@ window.assign=async function(lisIndex,requestKey){ // requestKey místo reqIndex
       }
   }
 
-  // Uložíme data pro lis do Firebase
   set(ref(db,`lisy/${lisIndex}`),{
     kontakt:p.kontakt,
     prurez:p.prurez,
@@ -721,11 +725,10 @@ window.assign=async function(lisIndex,requestKey){ // requestKey místo reqIndex
     time:timeNow(),
     assignedAnimation: { 
       targetLisIndex: lisIndex,
-      requestDetails: { kontakt: p.kontakt, prurez: p.prurez, jmeno: p.jmeno, targetLisIndex: lisIndex }
+      requestDetails: { kontakt: p.kontakt, prurez: p.prurez, jmeno: p.jmeno, targetLisIndex: lisIndex } 
     }
   });
   
-  // Odstraníme požadavek z fronty
   remove(ref(db,'pozadavky/'+p.key));
 }
 
@@ -917,7 +920,7 @@ function animateFlyingRequestFullscreen(targetEl, requestDetails) {
             flyingEl.style.background = finalBackground; 
             flyingEl.style.opacity = '0'; 
             flyingEl.style.transform = 'scale(0.8)'; 
-            flyingEl.innerHTML = ''; 
+            flying.innerHTML = ''; 
             
         }, 5000); 
 
@@ -980,6 +983,8 @@ window.showScreen=function(id){
     updateHeader();
     setActiveNavButton(id); 
 
+    // Logika pro skrytí/zobrazení topbaru
+    // Topbar se skryje JEN na obrazovce 'requests'
     if (id === 'requests') {
         mainTopbar.classList.add('hidden');
     } else {
