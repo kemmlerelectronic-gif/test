@@ -5,47 +5,47 @@
 <title>KEMMSOFT 4.0 Testing</title>
 <style>
 body{
-font-family:Segoe UI,Arial;
-background:url("background.png") center/cover fixed;
-margin:0;
-color:white;
+  font-family:Segoe UI,Arial;
+  background:url("background.png") center/cover fixed;
+  margin:0;
+  color:white;
 }
 body::before{
-content:"";
-position:fixed;
-inset:0;
-background:rgba(0,0,0,0.4);
-z-index:-1;
+  content:"";
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.4);
+  z-index:-1;
 }
 .topbar{
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:15px 25px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:15px 25px;
 }
 .logo {
-    font-size: 36px;
-    font-weight: bold;
-    background: linear-gradient(45deg, #22c55e);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 2px 2px 6px rgba(0,0,0,0.5);
+  font-size: 36px;
+  font-weight: bold;
+  background: linear-gradient(45deg, #22c55e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 2px 2px 6px rgba(0,0,0,0.5);
 }
 .nav button{
-padding:8px 16px;
-margin-left:6px;
-border:none;
-border-radius:6px;
-background:#22c55e;
-color:white;
-cursor:pointer;
+  padding:8px 16px;
+  margin-left:6px;
+  border:none;
+  border-radius:6px;
+  background:#22c55e;
+  color:white;
+  cursor:pointer;
 }
 .header{
-text-align:center;
-font-size:68px;
-background:#111827cc;
-padding:10px;
-transition: all 0.3s ease;
+  text-align:center;
+  font-size:68px;
+  background:#111827cc;
+  padding:10px;
+  transition: all 0.3s ease;
 }
 @keyframes headerBlink {
   0%, 100% { color: #22c55e; }
@@ -55,167 +55,149 @@ transition: all 0.3s ease;
   animation: headerBlink 1s infinite;
 }
 .layout{
-display:grid;
-grid-template-columns:4fr 1.3fr;
-gap:20px;
-padding:20px;
+  display:grid;
+  grid-template-columns:4fr 1.3fr;
+  gap:20px;
+  padding:20px;
 }
 .rowTop{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:20px;
-margin-bottom:20px;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px;
+  margin-bottom:20px;
 }
 .rowBottom{
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:20px;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:20px;
 }
 .card{
-background:#020617dd;
-padding:25px;
-border-radius:18px;
-text-align:center;
-transition:.3s;
+  background:#020617dd;
+  padding:25px;
+  border-radius:18px;
+  text-align:center;
+  transition:.3s;
 }
 .card.assigned{
-background:#22c55e90;
-color:black;
-box-shadow:0 0 20px #22c55e44;
+  background:#22c55e90;
+  color:black;
+  box-shadow:0 0 20px #22c55e44;
 }
 .card.active{
-background:#22c55e;
-color:black;
-box-shadow:0 0 40px #22c55e;
-transform:scale(1.05);
+  background:#22c55e;
+  color:black;
+  box-shadow:0 0 40px #22c55e;
+  transform:scale(1.05);
 }
 .lis {
-    font-size: 26px;
-    font-weight: bold;
-    background: linear-gradient(45deg, #22c55e); 
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow:
-        2px 2px 4px rgba(0,0,0,0.5),
-        4px 4px 6px rgba(0,0,0,0.4);
-    transition: all 0.3s ease;
-}
-.card:hover .lis {
-    transform: scale(1.1) rotateX(2deg) rotateY(2deg);
-    text-shadow:
-        3px 3px 5px rgba(0,0,0,0.6),
-        6px 6px 8px rgba(0,0,0,0.5);
+  font-size: 26px;
+  font-weight: bold;
+  background: linear-gradient(45deg, #22c55e); 
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow:
+      2px 2px 4px rgba(0,0,0,0.5),
+      4px 4px 6px rgba(0,0,0,0.4);
+  transition: all 0.3s ease;
 }
 @keyframes lisBlink {
-    0% { transform: scale(1) rotateX(0deg) rotateY(0deg); text-shadow: 2px 2px 4px rgba(0,0,0,0.5), 4px 4px 6px rgba(0,0,0,0.4); }
-    50% { transform: scale(1.2) rotateX(5deg) rotateY(5deg); text-shadow: 4px 4px 8px rgba(0,0,0,0.7), 8px 8px 10px rgba(0,0,0,0.6); }
-    100% { transform: scale(1) rotateX(0deg) rotateY(0deg); text-shadow: 2px 2px 4px rgba(0,0,0,0.5), 4px 4px 6px rgba(0,0,0,0.4); }
+  0% { transform: scale(1) rotateX(0deg) rotateY(0deg); text-shadow: 2px 2px 4px rgba(0,0,0,0.5), 4px 4px 6px rgba(0,0,0,0.4); }
+  50% { transform: scale(1.2) rotateX(5deg) rotateY(5deg); text-shadow: 4px 4px 8px rgba(0,0,0,0.7), 8px 8px 10px rgba(0,0,0,0.6); }
+  100% { transform: scale(1) rotateX(0deg) rotateY(0deg); text-shadow: 2px 2px 4px rgba(0,0,0,0.5), 4px 4px 6px rgba(0,0,0,0.4); }
 }
 .card.active .lis {
-    animation: lisBlink 1.2s ease forwards;
+  animation: lisBlink 1.2s ease forwards;
 }
 .kontakt{font-size:22px;color:#22d3ee}
 .prurez{font-size:20px;color:#fbbf24}
 .jmeno{font-size:18px;color:#a3e635}
 .time{font-size:16px;color:#cbd5f5;margin-top:4px}
 .hotovo{
-margin-top:10px;
-padding:6px 14px;
-border:none;
-border-radius:6px;
-background:#ef4444;
-color:white;
-cursor:pointer;
+  margin-top:10px;
+  padding:6px 14px;
+  border:none;
+  border-radius:6px;
+  background:#ef4444;
+  color:white;
+  cursor:pointer;
 }
 .queue{
-background:#020617dd;
-padding:20px;
-border-radius:18px;
-max-height:80vh;
-overflow-y:auto;
+  background:#020617dd;
+  padding:20px;
+  border-radius:18px;
+  max-height:80vh;
+  overflow-y:auto;
 }
 .queueItem{
-padding:10px;
-border-bottom:1px solid #1e293b;
-margin-bottom:8px;
+  padding:10px;
+  border-bottom:1px solid #1e293b;
+  margin-bottom:8px;
 }
 .assign button{
-margin:2px;
-padding:4px 8px;
-border:none;
-border-radius:4px;
-background:#22c55e;
-color:white;
-cursor:pointer;
+  margin:2px;
+  padding:4px 8px;
+  border:none;
+  border-radius:4px;
+  background:#22c55e;
+  color:white;
+  cursor:pointer;
 }
 .assign .delete{
-background:#ef4444;
+  background:#ef4444;
 }
 input{
-width:100%;
-padding:8px;
-margin-bottom:6px;
-border-radius:6px;
-border:none;
+  width:100%;
+  padding:8px;
+  margin-bottom:6px;
+  border-radius:6px;
+  border:none;
 }
 .addBtn{
-width:100%;
-padding:10px;
-background:#3b82f6;
-border:none;
-border-radius:8px;
-color:white;
-cursor:pointer;
+  width:100%;
+  padding:10px;
+  background:#3b82f6;
+  border:none;
+  border-radius:8px;
+  color:white;
+  cursor:pointer;
+}
+.popup, .fullscreenPopup{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#22c55e;
+  z-index:200;
+  text-align:center;
+  padding:40px;
+  display:none;
 }
 .popup{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,0.92);
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:90px;
-font-weight:bold;
-color:#22c55e;
-z-index:100;
-text-align:center;
-padding:40px;
-display:none;
+  font-size:90px;
+  font-weight:bold;
+  background:rgba(0,0,0,0.92);
 }
 .fullscreenPopup{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,0.95);
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:80px;
-font-weight:bold;
-color:#22c55e;
-z-index:200;
-text-align:center;
-padding:40px;
-display:none;
+  font-size:80px;
+  font-weight:bold;
+  background:rgba(0,0,0,0.95);
 }
 .screen{display:none}
 </style>
 </head>
 
 <body>
-
 <div class="topbar">
-<div class="logo">KEMMSOFT 4.0 Testing</div>
-<div class="nav">
-<button onclick="showScreen('setup')">Nastavení</button>
-<button onclick="showScreen('production')">Výrobní obrazovka</button>
-<button onclick="showScreen('requests')">Požadavky</button>
-</div>
+  <div class="logo">KEMMSOFT 4.0 Testing</div>
+  <div class="nav">
+    <button onclick="showScreen('setup')">Nastavení</button>
+    <button onclick="showScreen('production')">Výrobní obrazovka</button>
+    <button onclick="showScreen('requests')">Požadavky</button>
+  </div>
 </div>
 
 <div class="header" id="mainHeader">---</div>
@@ -224,66 +206,64 @@ display:none;
 
 <!-- NASTAVENI -->
 <div id="setup" class="screen">
-<div class="layout">
-<div>
-<div class="rowTop" id="setupTop"></div>
-<div class="rowBottom" id="setupBottom"></div>
-</div>
-<div class="queue">
-<h3>Požadavky</h3>
-<div id="setupQueue"></div>
-<h3>Nový požadavek</h3>
-<input id="setupKontakt" placeholder="Číslo kontaktu">
-<input id="setupPrurez" placeholder="Průřez">
-<input id="setupJmeno" placeholder="Jméno">
-<button class="addBtn" onclick="addRequestSetup()">Odeslat</button>
-</div>
-</div>
+  <div class="layout">
+    <div>
+      <div class="rowTop" id="setupTop"></div>
+      <div class="rowBottom" id="setupBottom"></div>
+    </div>
+    <div class="queue">
+      <h3>Požadavky</h3>
+      <div id="setupQueue"></div>
+      <h3>Nový požadavek</h3>
+      <input id="setupKontakt" placeholder="Číslo kontaktu">
+      <input id="setupPrurez" placeholder="Průřez">
+      <input id="setupJmeno" placeholder="Jméno">
+      <button class="addBtn" onclick="addRequestSetup()">Odeslat</button>
+    </div>
+  </div>
 </div>
 
 <!-- VYROBA -->
 <div id="production" class="screen">
-<div class="layout">
-<div>
-<div class="rowTop" id="prodTop"></div>
-<div class="rowBottom" id="prodBottom"></div>
-</div>
-<div class="queue">
-<h3>Požadavky</h3>
-<div id="prodQueue"></div>
-</div>
-</div>
+  <div class="layout">
+    <div>
+      <div class="rowTop" id="prodTop"></div>
+      <div class="rowBottom" id="prodBottom"></div>
+    </div>
+    <div class="queue">
+      <h3>Požadavky</h3>
+      <div id="prodQueue"></div>
+    </div>
+  </div>
 </div>
 
 <!-- POZADAVKY -->
 <div id="requests" class="screen">
-<div style="max-width:400px;margin:40px auto">
-<h2>Nový požadavek</h2>
-<input id="kontakt" placeholder="Číslo kontaktu">
-<input id="prurez" placeholder="Průřez">
-<input id="jmeno" placeholder="Jméno">
-<button class="addBtn" onclick="addRequest()">Odeslat</button>
-</div>
+  <div style="max-width:400px;margin:40px auto">
+    <h2>Nový požadavek</h2>
+    <input id="kontakt" placeholder="Číslo kontaktu">
+    <input id="prurez" placeholder="Průřez">
+    <input id="jmeno" placeholder="Jméno">
+    <button class="addBtn" onclick="addRequest()">Odeslat</button>
+  </div>
 </div>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, push, set, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 const firebaseConfig={
-apiKey:"AIzaSyAhiCfh-Di_NdPO5rGM7CZFQGaSymcdWxI",
-authDomain:"lisyweb-df6d9.firebaseapp.com",
-databaseURL:"https://lisyweb-df6d9-default-rtdb.firebaseio.com/",
-projectId:"lisyweb-df6d9"
+  apiKey:"AIzaSyAhiCfh-Di_NdPO5rGM7CZFQGaSymcdWxI",
+  authDomain:"lisyweb-df6d9.firebaseapp.com",
+  databaseURL:"https://lisyweb-df6d9-default-rtdb.firebaseio.com/",
+  projectId:"lisyweb-df6d9"
 };
 
 const app=initializeApp(firebaseConfig);
 const db=getDatabase(app);
 
 const LIS_COUNT=7;
-let lisy=[];
-let pozadavky=[];
+let lisy=[], pozadavky=[];
 
 function emptyLis(){ return {kontakt:"",prurez:"",jmeno:"",time:""} }
 function timeNow(){ return new Date().toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'}) }
@@ -293,7 +273,7 @@ onValue(ref(db,'lisy'),snap=>{
   lisy=data ? Object.values(data) : Array.from({length:LIS_COUNT},()=>emptyLis());
   while(lisy.length<LIS_COUNT) lisy.push(emptyLis());
   renderAll();
-  updateHeader(); // aktualizace hlavního banneru
+  updateHeader();
 });
 
 onValue(ref(db,'pozadavky'),snap=>{
@@ -326,8 +306,7 @@ function renderLisy(topID,bottomID,setup){
         ${setup?`<button class="hotovo" onclick="clearLis(${i})">HOTOVO</button>`:""}
       </div>
     `;
-    if(i<3) top.innerHTML += html;
-    else bottom.innerHTML += html;
+    if(i<3) top.innerHTML += html; else bottom.innerHTML += html;
   }
 }
 
@@ -350,6 +329,7 @@ function renderQueue(id,setup){
 
 window.assign=function(lisIndex,reqIndex){
   const p=pozadavky[reqIndex];
+  if(!p) return;
   set(ref(db,`lisy/${lisIndex}`),{
     kontakt:p.kontakt,
     prurez:p.prurez,
@@ -360,16 +340,14 @@ window.assign=function(lisIndex,reqIndex){
   blink(p,lisIndex,true);
 }
 
-window.clearLis=function(i){
-  set(ref(db,`lisy/${i}`),emptyLis());
-}
-
+window.clearLis=function(i){ set(ref(db,`lisy/${i}`),emptyLis()); }
 window.deleteReq=function(key){ remove(ref(db,'pozadavky/'+key)); }
 
 window.addRequest=function(){
   const kontakt=document.getElementById("kontakt").value;
   const prurez=document.getElementById("prurez").value;
   const jmeno=document.getElementById("jmeno").value;
+  if(!kontakt) return;
   const r=push(ref(db,'pozadavky'));
   set(r,{kontakt,prurez,jmeno,time:timeNow()});
   document.getElementById("kontakt").value="";
@@ -381,6 +359,7 @@ window.addRequestSetup=function(){
   const kontakt=document.getElementById("setupKontakt").value;
   const prurez=document.getElementById("setupPrurez").value;
   const jmeno=document.getElementById("setupJmeno").value;
+  if(!kontakt) return;
   const r=push(ref(db,'pozadavky'));
   set(r,{kontakt,prurez,jmeno,time:timeNow()});
   document.getElementById("setupKontakt").value="";
@@ -406,7 +385,19 @@ function blink(p,i,assigned=false){
     showFullscreenPopup(`${p.kontakt} - ${p.prurez} - ${p.jmeno} → LIS ${i+1}`);
   }
 
-  tone();
+  // Zvuk – stejný jako starý HTML
+  playTone();
+}
+
+function playTone(){
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.frequency.value = 1000;
+  o.connect(g);
+  g.connect(ctx.destination);
+  o.start();
+  o.stop(ctx.currentTime + 0.3);
 }
 
 function showFullscreenPopup(text){
@@ -427,29 +418,14 @@ function updateHeader(){
   if(last) showFullscreenPopup(last);
 }
 
-function popup(text){
-  const p=document.getElementById("popup");
-  p.innerText=text;
-  p.style.display="flex";
-  setTimeout(()=>p.style.display="none",5000);
-}
-
-function tone(){
-  const ctx=new(window.AudioContext||window.webkitAudioContext)();
-  const o=ctx.createOscillator();
-  o.frequency.value=900;
-  o.connect(ctx.destination);
-  o.start();
-  o.stop(ctx.currentTime+0.25);
-}
-
 window.showScreen=function(id){
-    document.querySelectorAll(".screen").forEach(s=>s.style.display="none");
-    document.getElementById(id).style.display="block";
-    updateHeader();
+  document.querySelectorAll(".screen").forEach(s=>s.style.display="none");
+  document.getElementById(id).style.display="block";
+  updateHeader();
 }
 
 showScreen("setup");
+
 setInterval(()=>{
   const production = document.getElementById("production");
   if(production.style.display !== "block") return;
@@ -462,9 +438,3 @@ setInterval(()=>{
 </script>
 </body>
 </html>
-
-},100);
-</script>
-</body>
-</html>
-
