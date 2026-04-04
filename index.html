@@ -4,210 +4,40 @@
 <meta charset="UTF-8">
 <title>KEMMSOFT 4.0 Testing</title>
 <style>
-body{
-font-family:Segoe UI,Arial;
-background:url("background.png") center/cover fixed;
-margin:0;
-color:white;
-}
-body::before{
-content:"";
-position:fixed;
-inset:0;
-background:rgba(0,0,0,0.2);
-z-index:-1;
-}
-.topbar{
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:15px 25px;
-}
-.logo {
-    font-size: 36px;
-    font-weight: bold;
-    background: linear-gradient(45deg, #22c55e);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 2px 2px 6px rgba(0,0,0,0.5);
-}
-.nav button{
-padding:8px 16px;
-margin-left:6px;
-border:none;
-border-radius:6px;
-background:#22c55e;
-color:white;
-cursor:pointer;
-}
-.header{
-text-align:center;
-font-size:68px;
-background:#111827cc;
-padding:10px;
-transition: all 0.3s ease;
-}
-@keyframes headerBlink {
-  0%, 100% { color: #22c55e; }
-  50% { color: #ffffff; }
-}
-.header.blink {
-  animation: headerBlink 1s infinite;
-}
-.layout{
-display:grid;
-grid-template-columns:4fr 1.3fr;
-gap:20px;
-padding:20px;
-}
-.rowTop{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:20px;
-margin-bottom:20px;
-}
-.rowBottom{
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:20px;
-}
-.card{
-background:#1e293bcc;
-padding:25px;
-border-radius:18px;
-text-align:center;
-transition:.3s;
-}
-.card.assigned{
-background:#22c55e90;
-color:black;
-box-shadow:0 0 20px #22c55e44;
-}
-.card.active{
-background:#22c55e;
-color:black;
-box-shadow:0 0 40px #22c55e;
-transform:scale(1.05);
-}
-.lis {
-    font-size: 48px;
-    font-weight: bold;
-    background: linear-gradient(45deg, #22c55e); 
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow:
-        2px 2px 4px rgba(0,0,0,0.5),
-        4px 4px 6px rgba(0,0,0,0.4);
-    transition: all 0.3s ease;
-}
-.card:hover .lis {
-    transform: scale(1.1) rotateX(2deg) rotateY(2deg);
-    text-shadow:
-        3px 3px 5px rgba(0,0,0,0.6),
-        6px 6px 8px rgba(0,0,0,0.5);
-}
-@keyframes lisBlink {
-    0% { transform: scale(1) rotateX(0deg) rotateY(0deg); text-shadow: 2px 2px 4px rgba(0,0,0,0.5), 4px 4px 6px rgba(0,0,0,0.4); }
-    50% { transform: scale(1.2) rotateX(5deg) rotateY(5deg); text-shadow: 4px 4px 8px rgba(0,0,0,0.7), 8px 8px 10px rgba(0,0,0,0.6); }
-    100% { transform: scale(1) rotateX(0deg) rotateY(0deg); text-shadow: 2px 2px 4px rgba(0,0,0,0.5), 4px 4px 6px rgba(0,0,0,0.4); }
-}
-.card.active .lis {
-    animation: lisBlink 1.2s ease forwards;
-}
+body{font-family:Segoe UI,Arial;background:url("background.png") center/cover fixed;margin:0;color:white}
+body::before{content:"";position:fixed;inset:0;background:rgba(0,0,0,0.2);z-index:-1}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:15px 25px}
+.logo{font-size:36px;font-weight:bold;background:linear-gradient(45deg,#22c55e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:2px 2px 6px rgba(0,0,0,0.5)}
+.nav button{padding:8px 16px;margin-left:6px;border:none;border-radius:6px;background:#22c55e;color:white;cursor:pointer}
+.header{text-align:center;font-size:68px;background:#111827cc;padding:10px;transition:all 0.3s ease}
+@keyframes headerBlink{0%,100%{color:#22c55e}50%{color:#fff}}
+.header.blink{animation:headerBlink 1s infinite}
+.layout{display:grid;grid-template-columns:4fr 1.3fr;gap:20px;padding:20px}
+.rowTop{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:20px}
+.rowBottom{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.card{background:#1e293bcc;padding:25px;border-radius:18px;text-align:center;transition:.3s}
+.card.assigned{background:#22c55e90;color:black;box-shadow:0 0 20px #22c55e44}
+.card.active{background:#22c55e;color:black;box-shadow:0 0 40px #22c55e;transform:scale(1.05)}
+.lis{font-size:48px;font-weight:bold;background:linear-gradient(45deg,#22c55e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:2px 2px 4px rgba(0,0,0,0.5),4px 4px 6px rgba(0,0,0,0.4);transition:all 0.3s ease}
+.card.active .lis{animation:lisBlink 1.2s ease forwards}
+@keyframes lisBlink{0%{transform:scale(1) rotateX(0deg) rotateY(0deg)}50%{transform:scale(1.2) rotateX(5deg) rotateY(5deg)}100%{transform:scale(1) rotateX(0deg) rotateY(0deg)}}
 .kontakt{font-size:34px;color:#22d3ee}
 .prurez{font-size:34px;color:#fbbf24}
 .jmeno{font-size:34px;color:#a3e635}
 .time{font-size:20px;color:#cbd5f5;margin-top:4px}
-.hotovo{
-margin-top:10px;
-padding:6px 14px;
-border:none;
-border-radius:6px;
-background:#ef4444;
-color:white;
-cursor:pointer;
-}
-.queue{
-background:#020617dd;
-padding:20px;
-border-radius:18px;
-max-height:80vh;
-overflow-y:auto;
-}
-.queueItem{
-padding:10px;
-border-bottom:1px solid #1e293b;
-margin-bottom:8px;
- font-size:28px;
-}
-.assign button{
-margin:2px;
-padding:4px 8px;
-border:none;
-border-radius:4px;
-background:#22c55e;
-color:white;
-cursor:pointer;
-}
-.assign .delete{
-background:#ef4444;
-}
-input{
-width:100%;
-padding:8px;
-margin-bottom:6px;
-border-radius:6px;
-border:none;
-}
-.addBtn{
-width:100%;
-padding:10px;
-background:#3b82f6;
-border:none;
-border-radius:8px;
-color:white;
-cursor:pointer;
-}
-.popup{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,0.92);
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:90px;
-font-weight:bold;
-color:#22c55e;
-z-index:100;
-text-align:center;
-padding:40px;
-display:none;
-}
-.fullscreenPopup{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,0.95);
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:80px;
-font-weight:bold;
-color:#22c55e;
-z-index:200;
-text-align:center;
-padding:40px;
-display:none;
-}
+.hotovo{margin-top:10px;padding:6px 14px;border:none;border-radius:6px;background:#ef4444;color:white;cursor:pointer}
+.queue{background:#020617dd;padding:20px;border-radius:18px;max-height:80vh;overflow-y:auto}
+.queueItem{padding:10px;border-bottom:1px solid #1e293b;margin-bottom:8px;font-size:28px}
+.assign button{margin:2px;padding:4px 8px;border:none;border-radius:4px;background:#22c55e;color:white;cursor:pointer}
+.assign .delete{background:#ef4444}
+input{width:100%;padding:8px;margin-bottom:6px;border-radius:6px;border:none}
+.addBtn{width:100%;padding:10px;background:#3b82f6;border:none;border-radius:8px;color:white;cursor:pointer}
+.popup,.fullscreenPopup{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:bold;color:#22c55e;z-index:200;text-align:center;padding:40px;display:none}
+.popup{font-size:90px;background:rgba(0,0,0,0.92);z-index:100}
+.fullscreenPopup{font-size:80px;background:rgba(0,0,0,0.95)}
 .screen{display:none}
 </style>
 </head>
-
 <body>
 
 <div class="topbar">
@@ -223,7 +53,7 @@ display:none;
 <div class="popup" id="popup"></div>
 <div class="fullscreenPopup" id="fullscreenPopup"></div>
 
-<!-- NASTAVENI -->
+<!-- Setup Screen -->
 <div id="setup" class="screen">
 <div class="layout">
 <div>
@@ -242,7 +72,7 @@ display:none;
 </div>
 </div>
 
-<!-- VYROBA -->
+<!-- Production Screen -->
 <div id="production" class="screen">
 <div class="layout">
 <div>
@@ -256,7 +86,7 @@ display:none;
 </div>
 </div>
 
-<!-- POZADAVKY -->
+<!-- Requests Screen -->
 <div id="requests" class="screen">
 <div style="max-width:400px;margin:40px auto">
 <h2>Nový požadavek</h2>
@@ -268,38 +98,35 @@ display:none;
 </div>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, push, set, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
-    let audioCtx = null;
 
+let audioCtx = null;
 const firebaseConfig={
-apiKey:"AIzaSyAhiCfh-Di_NdPO5rGM7CZFQGaSymcdWxI",
-authDomain:"lisyweb-df6d9.firebaseapp.com",
-databaseURL:"https://lisyweb-df6d9-default-rtdb.firebaseio.com/",
-projectId:"lisyweb-df6d9"
+  apiKey:"AIzaSyAhiCfh-Di_NdPO5rGM7CZFQGaSymcdWxI",
+  authDomain:"lisyweb-df6d9.firebaseapp.com",
+  databaseURL:"https://lisyweb-df6d9-default-rtdb.firebaseio.com/",
+  projectId:"lisyweb-df6d9"
 };
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-const app=initializeApp(firebaseConfig);
-const db=getDatabase(app);
-
-const LIS_COUNT=7;
-let lisy=[];
-let pozadavky=[];
+const LIS_COUNT = 7;
+let lisy = [];
+let pozadavky = [];
 
 function emptyLis(){ return {kontakt:"",prurez:"",jmeno:"",time:""} }
 function timeNow(){ return new Date().toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'}) }
 
 onValue(ref(db,'lisy'),snap=>{
-  const data=snap.val();
-  lisy=data ? Object.values(data) : Array.from({length:LIS_COUNT},()=>emptyLis());
+  const data = snap.val();
+  lisy = data ? Object.values(data) : Array.from({length:LIS_COUNT},()=>emptyLis());
   while(lisy.length<LIS_COUNT) lisy.push(emptyLis());
-  renderAll();
-  updateHeader(); // aktualizace hlavního banneru
+  renderAll(); updateHeader();
 });
 
 onValue(ref(db,'pozadavky'),snap=>{
-  const data=snap.val();
+  const data = snap.val();
   pozadavky = data ? Object.entries(data).map(([k,v])=>({...v,key:k})) : [];
   renderAll();
 });
@@ -312,60 +139,37 @@ function renderAll(){
 }
 
 function renderLisy(topID,bottomID,setup){
-  const top=document.getElementById(topID);
-  const bottom=document.getElementById(bottomID);
-  top.innerHTML=""; bottom.innerHTML="";
+  const top=document.getElementById(topID); const bottom=document.getElementById(bottomID); top.innerHTML=""; bottom.innerHTML="";
   for(let i=0;i<7;i++){
-    const d = lisy[i] || emptyLis();
-    const assigned = d.kontakt!=="";
-    const html = `
-      <div class="card ${assigned?'assigned':''}" id="lis${i}">
-        <div class="lis">LIS ${i+1}</div>
-        <div class="kontakt">${d.kontakt||"---"}</div>
-        <div class="prurez">${d.prurez||"---"}</div>
-        <div class="jmeno">${d.jmeno||"---"}</div>
-        <div class="time">${d.time||""}</div>
-        ${setup?`<button class="hotovo" onclick="clearLis(${i})">HOTOVO</button>`:""}
-      </div>
-    `;
-    if(i<3) top.innerHTML += html;
-    else bottom.innerHTML += html;
+    const d = lisy[i] || emptyLis(); const assigned = d.kontakt!=="";
+    const html = `<div class="card ${assigned?'assigned':''}" id="lis${i}">
+      <div class="lis">LIS ${i+1}</div>
+      <div class="kontakt">${d.kontakt||"---"}</div>
+      <div class="prurez">${d.prurez||"---"}</div>
+      <div class="jmeno">${d.jmeno||"---"}</div>
+      <div class="time">${d.time||""}</div>
+      ${setup?`<button class="hotovo" onclick="clearLis(${i})">HOTOVO</button>`:""}
+      </div>`;
+    if(i<3) top.innerHTML += html; else bottom.innerHTML += html;
   }
 }
 
 function renderQueue(id,setup){
-  const q=document.getElementById(id);
-  q.innerHTML="";
+  const q=document.getElementById(id); q.innerHTML="";
   pozadavky.forEach((p,i)=>{
-    q.innerHTML+=`
-      <div class="queueItem">
-        <b>${p.kontakt}</b> - ${p.prurez} - ${p.jmeno}
-        <div class="time">${p.time}</div>
-        ${setup?`
-        <div class="assign">
-          ${[0,1,2,3,4,5,6].map(l=>`<button onclick="assign(${l},${i})">L${l+1}</button>`).join('')}
-          <button class="delete" onclick="deleteReq('${p.key}')">X</button>
-        </div>`:""}
-      </div>`;
+    q.innerHTML+=`<div class="queueItem"><b>${p.kontakt}</b> - ${p.prurez} - ${p.jmeno}<div class="time">${p.time}</div>
+      ${setup?`<div class="assign">${[0,1,2,3,4,5,6].map(l=>`<button onclick="assign(${l},${i})">L${l+1}</button>`).join('')}
+      <button class="delete" onclick="deleteReq('${p.key}')">X</button></div>`:""}</div>`;
   });
 }
 
 window.assign=function(lisIndex,reqIndex){
   const p=pozadavky[reqIndex];
-  set(ref(db,`lisy/${lisIndex}`),{
-    kontakt:p.kontakt,
-    prurez:p.prurez,
-    jmeno:p.jmeno,
-    time:timeNow()
-  });
+  set(ref(db,`lisy/${lisIndex}`),{kontakt:p.kontakt,prurez:p.prurez,jmeno:p.jmeno,time:timeNow()});
   remove(ref(db,'pozadavky/'+p.key));
   blink(p,lisIndex,true);
 }
-
-window.clearLis=function(i){
-  set(ref(db,`lisy/${i}`),emptyLis());
-}
-
+window.clearLis=function(i){ set(ref(db,`lisy/${i}`),emptyLis()); }
 window.deleteReq=function(key){ remove(ref(db,'pozadavky/'+key)); }
 
 window.addRequest=function(){
@@ -374,9 +178,7 @@ window.addRequest=function(){
   const jmeno=document.getElementById("jmeno").value;
   const r=push(ref(db,'pozadavky'));
   set(r,{kontakt,prurez,jmeno,time:timeNow()});
-  document.getElementById("kontakt").value="";
-  document.getElementById("prurez").value="";
-  document.getElementById("jmeno").value="";
+  document.getElementById("kontakt").value=""; document.getElementById("prurez").value=""; document.getElementById("jmeno").value="";
 }
 
 window.addRequestSetup=function(){
@@ -385,78 +187,39 @@ window.addRequestSetup=function(){
   const jmeno=document.getElementById("setupJmeno").value;
   const r=push(ref(db,'pozadavky'));
   set(r,{kontakt,prurez,jmeno,time:timeNow()});
-  document.getElementById("setupKontakt").value="";
-  document.getElementById("setupPrurez").value="";
-  document.getElementById("setupJmeno").value="";
+  document.getElementById("setupKontakt").value=""; document.getElementById("setupPrurez").value=""; document.getElementById("setupJmeno").value="";
 }
 
 function blink(p,i,assigned=false){
   const card=document.getElementById("lis"+i);
-  if(card){
-    card.classList.add("active");
-    if(assigned) card.classList.add("assigned");
-    setTimeout(()=>card?.classList.remove("active"),1200);
-  }
-
+  if(card){ card.classList.add("active"); if(assigned) card.classList.add("assigned"); setTimeout(()=>card?.classList.remove("active"),1200);}
   const header=document.getElementById("mainHeader");
   header.innerText=`${p.kontakt} - ${p.prurez} - ${p.jmeno} → LIS ${i+1}`;
-  header.classList.add("blink");
-  setTimeout(()=>header.classList.remove("blink"),3000);
-
-  const currentScreen=document.querySelector(".screen:not([style*='display: none'])").id;
-  if(currentScreen==="production"){ 
-    showFullscreenPopup(`${p.kontakt} - ${p.prurez} - ${p.jmeno} → LIS ${i+1}`);
-  }
-
-  tone();
+  header.classList.add("blink"); setTimeout(()=>header.classList.remove("blink"),3000);
+  if(document.getElementById("production").style.display==="block"){ showFullscreenPopup(`${p.kontakt} - ${p.prurez} - ${p.jmeno} → LIS ${i+1}`);}
+  playTone();
 }
 
-function showFullscreenPopup(text){
-  const popup=document.getElementById("fullscreenPopup");
-  popup.innerText=text;
-  popup.style.display="flex";
-  setTimeout(()=>popup.style.display="none",5000);
-}
+function showFullscreenPopup(text){ const popup=document.getElementById("fullscreenPopup"); popup.innerText=text; popup.style.display="flex"; setTimeout(()=>popup.style.display="none",5000);}
+function updateHeader(){ const prodScreen=document.getElementById("production"); if(prodScreen.style.display!=="block") return; let last=null; lisy.forEach((l,i)=>{ if(l.kontakt!=="") last=`${l.kontakt} - ${l.prurez} - ${l.jmeno} → LIS ${i+1}`; }); document.getElementById("mainHeader").innerText=last||"---"; if(last) showFullscreenPopup(last);}
+function popup(text){ const p=document.getElementById("popup"); p.innerText=text; p.style.display="flex"; setTimeout(()=>p.style.display="none",5000);}
+function playTone(){ if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const o=audioCtx.createOscillator(); const g=audioCtx.createGain(); o.frequency.value=900; o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + 0.25);}
+function showScreen(id){ document.querySelectorAll(".screen").forEach(s=>s.style.display="none"); document.getElementById(id).style.display="block"; }
 
-function updateHeader(){
-  const prodScreen=document.getElementById("production");
-  if(prodScreen.style.display !== "block") return;
-  let last = null;
-  lisy.forEach((l,i)=>{
-    if(l.kontakt !== "") last = `${l.kontakt} - ${l.prurez} - ${l.jmeno} → LIS ${i+1}`;
-  });
-  document.getElementById("mainHeader").innerText = last || "---";
-  if(last) showFullscreenPopup(last);
-}
-
-function popup(text){
-  const p=document.getElementById("popup");
-  p.innerText=text;
-  p.style.display="flex";
-  setTimeout(()=>p.style.display="none",5000);
-}
-
-function playTone(){
-    const ctx=new(window.AudioContext||window.webkitAudioContext)();
-    const o=ctx.createOscillator();
-    const g=ctx.createGain();
-    o.frequency.value=1000;
-    o.connect(g);
-    g.connect(ctx.destination);
-    o.start();
-    o.stop(ctx.currentTime+0.3);
-}
-
-showScreen("setup");
+// Scroll queue
 setInterval(()=>{
   const production = document.getElementById("production");
-  if(production.style.display !== "block") return;
-  const q = production.querySelector(".queue");
+  if(production.style.display!=="block") return;
+  const q=production.querySelector(".queue");
   if(!q) return;
   q.scrollTop += 1;
-  if(q.scrollTop + q.clientHeight >= q.scrollHeight) q.scrollTop = 0;
+  if(q.scrollTop+q.clientHeight>=q.scrollHeight) q.scrollTop=0;
 },100);
 
+// Unlock audio
+document.body.addEventListener("click",()=>{ if(!audioCtx){ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); console.log("Audio odemčeno!"); }},{once:true});
+
+showScreen("setup");
 </script>
 </body>
 </html>
