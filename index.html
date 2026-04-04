@@ -14,7 +14,7 @@ body::before{
 content:"";
 position:fixed;
 inset:0;
-background:rgba(0,0,0,0.4);
+background:rgba(0,0,0,0.2);
 z-index:-1;
 }
 .topbar{
@@ -72,7 +72,7 @@ grid-template-columns:repeat(4,1fr);
 gap:20px;
 }
 .card{
-background:#020617dd;
+background:#1e293bcc;
 padding:25px;
 border-radius:18px;
 text-align:center;
@@ -90,7 +90,7 @@ box-shadow:0 0 40px #22c55e;
 transform:scale(1.05);
 }
 .lis {
-    font-size: 26px;
+    font-size: 48px;
     font-weight: bold;
     background: linear-gradient(45deg, #22c55e); 
     -webkit-background-clip: text;
@@ -114,10 +114,10 @@ transform:scale(1.05);
 .card.active .lis {
     animation: lisBlink 1.2s ease forwards;
 }
-.kontakt{font-size:22px;color:#22d3ee}
-.prurez{font-size:20px;color:#fbbf24}
-.jmeno{font-size:18px;color:#a3e635}
-.time{font-size:16px;color:#cbd5f5;margin-top:4px}
+.kontakt{font-size:34px;color:#22d3ee}
+.prurez{font-size:34px;color:#fbbf24}
+.jmeno{font-size:34px;color:#a3e635}
+.time{font-size:20px;color:#cbd5f5;margin-top:4px}
 .hotovo{
 margin-top:10px;
 padding:6px 14px;
@@ -138,6 +138,7 @@ overflow-y:auto;
 padding:10px;
 border-bottom:1px solid #1e293b;
 margin-bottom:8px;
+ font-size:28px;
 }
 .assign button{
 margin:2px;
@@ -435,6 +436,7 @@ function popup(text){
 }
 
 function tone(){
+let audioCtx = null;
   const ctx=new(window.AudioContext||window.webkitAudioContext)();
   const o=ctx.createOscillator();
   o.frequency.value=900;
@@ -459,11 +461,6 @@ setInterval(()=>{
   if(q.scrollTop + q.clientHeight >= q.scrollHeight) q.scrollTop = 0;
 },100);
 
-</script>
-</body>
-</html>
-
-},100);
 </script>
 </body>
 </html>
