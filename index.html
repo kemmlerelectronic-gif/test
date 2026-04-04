@@ -207,7 +207,6 @@ display:none;
 .screen{display:none}
 </style>
 </head>
-
 <body>
 
 <div class="topbar">
@@ -366,7 +365,6 @@ function renderQueue(id,setup){
   });
 }
 
-// --- funkce pro manipulaci ---
 window.assign=function(lisIndex,reqIndex){
   const p=pozadavky[reqIndex];
   set(ref(db,`lisy/${lisIndex}`),{
