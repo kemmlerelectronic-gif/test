@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
-<title>KEMMSOFT 4.2.2 Testing</title>
+<title>KEMMSOFT 4.0 Testing</title>
 <style>
 /* Základní styly */
 body{
@@ -266,24 +266,24 @@ transform-origin: center center; /* Pro správnou animaci zvětšení */
 .queueItem b { color: #22d3ee; font-size: 1.1em;} /* Barva pro kontakt a mírně větší */
 .queueItem .time { color: #cbd5f5; font-size: 0.9em; margin-top: 5px;} /* Trochu větší čas */
 
-/* ANIMACE PŘÍCHOZÍHO POŽADAVKU DO FRONTĚ */
+/* ANIMACE PŘÍCHOZÍHO POŽADAVKU DO FRONTĚ - NYNÍ ZJEMNĚNÁ VERZE */
 .queueItem.new-request-pulse {
     animation: newRequestPulse 4s forwards ease-in-out; /* Animace 4s dopředu */
 }
 @keyframes newRequestPulse {
     0% {
-        background: linear-gradient(145deg, #FF8C00, #FFA500); /* Oranžová */
-        box-shadow: 0 0 20px rgba(255, 140, 0, 0.8), 0 0 10px rgba(255, 165, 0, 0.6);
-        transform: scale(1.25); /* O 1/4 větší */
-        border-color: #FFA500;
-        color: black;
+        background: linear-gradient(145deg, #FFD700, #FFECB3); /* Světlejší žlutá/oranžová */
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.6), 0 0 5px rgba(255, 236, 179, 0.4);
+        transform: scale(1.05); /* Jen lehce větší */
+        border-color: #FFD700;
+        color: #333; /* Tmavší text, ale ne černá */
     }
     50% {
-        background: linear-gradient(145deg, #FFA500, #FFD700); /* Světlejší oranžová/zlatá */
-        box-shadow: 0 0 35px rgba(255, 165, 0, 1), 0 0 15px rgba(255, 215, 0, 0.8);
-        transform: scale(1.28); /* Mírně větší pulz */
+        background: linear-gradient(145deg, #FFECB3, #FFD700); /* Zase o něco světlejší */
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 8px rgba(255, 236, 179, 0.6);
+        transform: scale(1.08); /* Mírně větší pulz, ale stále jemný */
         border-color: #FFD700;
-        color: black;
+        color: #000;
     }
     100% {
         background: #020617aa; /* Zpět na původní tmavé pozadí */
@@ -920,7 +920,7 @@ function animateFlyingRequestFullscreen(targetEl, requestDetails) {
             flyingEl.style.background = finalBackground; 
             flyingEl.style.opacity = '0'; 
             flyingEl.style.transform = 'scale(0.8)'; 
-            flying.innerHTML = ''; 
+            flyingEl.innerHTML = ''; 
             
         }, 5000); 
 
