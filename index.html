@@ -436,21 +436,15 @@ function popup(text){
   setTimeout(()=>p.style.display="none",5000);
 }
 
-function tone(){
-  if(!audioCtx){
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  const o = audioCtx.createOscillator();
-  o.frequency.value = 900;
-  o.connect(audioCtx.destination);
-  o.start();
-  o.stop(audioCtx.currentTime + 0.25);
-}
-
-window.showScreen=function(id){
-    document.querySelectorAll(".screen").forEach(s=>s.style.display="none");
-    document.getElementById(id).style.display="block";
-    updateHeader();
+function playTone(){
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator();
+    const g=ctx.createGain();
+    o.frequency.value=1000;
+    o.connect(g);
+    g.connect(ctx.destination);
+    o.start();
+    o.stop(ctx.currentTime+0.3);
 }
 
 showScreen("setup");
