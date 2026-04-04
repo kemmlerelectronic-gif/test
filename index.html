@@ -439,15 +439,16 @@ display:none;
 .flying-request {
     position: fixed;
     z-index: 9999;
-    background: linear-gradient(45deg, #22c55e, #fbbf24); /* Barva požadavku */
+    /* Původní barvy a stín pro letící prvek */
+    background: linear-gradient(45deg, #22c55e, #fbbf24); 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
     color: white;
     padding: 10px 15px;
     border-radius: 10px;
     font-size: 1.2em;
     font-weight: bold;
     white-space: nowrap;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    display: flex; /* Aby text byl centrovaný */
+    display: flex; 
     align-items: center;
     justify-content: center;
     text-align: center;
@@ -456,15 +457,17 @@ display:none;
 
 /* Specific styling for fullscreen animation */
 .flying-request-fullscreen {
-    font-size: 80px; /* Větší text */
+    font-size: 80px; 
     padding: 40px;
     border-radius: 20px;
     width: 100vw;
     height: 100vh;
     left: 0;
     top: 0;
-    opacity: 0; /* Začíná schovaná */
-    transform: scale(0.1); /* Zmenšená */
+    opacity: 0; 
+    transform: scale(0.1); 
+    /* Přidáno přechodné (intermediární) barvy pro fázi, kdy je na obrazovce */
+    /* Tyto barvy se nastaví v JS po fázi příletu */
 }
 
 </style>
@@ -893,11 +896,16 @@ function animateFlyingRequestFullscreen(targetEl, requestDetails) {
 
         const targetRect = targetEl.getBoundingClientRect();
 
+        // Fáze 1: Objeví se a zvětší na fullscreen
         requestAnimationFrame(() => {
             flyingEl.style.opacity = '1';
             flyingEl.style.transform = 'scale(1)'; 
+            // Okamžitě nastavit barvy, aby se objevilo s těmito barvami
+            flyingEl.style.background = 'linear-gradient(45deg, #22c55e, #fbbf24)'; 
+            flyingEl.style.boxShadow = '0 0 50px rgba(34, 197, 94, 0.9), 0 0 20px rgba(251, 191, 36, 0.7)';
         });
 
+        // Fáze 2 & 3: Zůstane chvíli fullscreen (nyní 5 sekund), pak se přesune a sroluje do lisu
         setTimeout(() => {
             const targetLisIndex = requestDetails.targetLisIndex !== undefined ? requestDetails.targetLisIndex : (targetEl ? parseInt(targetEl.id.replace('lis', '')) : 0);
             const currentLisData = lisy[targetLisIndex]; 
@@ -909,20 +917,24 @@ function animateFlyingRequestFullscreen(targetEl, requestDetails) {
             const finalHeight = targetRect.height;
             const finalBorderRadius = parseFloat(getComputedStyle(targetEl).borderRadius);
             
+            // Změníme transition, aby animoval více vlastností
             flyingEl.style.transition = 'all 0.8s ease-in-out';
             
+            // Nastavíme cílové styly pro transformaci
             flyingEl.style.left = `${finalX}px`;
             flyingEl.style.top = `${finalY}px`;
             flyingEl.style.width = `${finalWidth}px`;
             flyingEl.style.height = `${finalHeight}px`;
             flyingEl.style.fontSize = `1.2em`; 
             flyingEl.style.borderRadius = `${finalBorderRadius}px`;
+            // Cílové barvy budou barvy lisu
             flyingEl.style.background = finalBackground; 
+            flyingEl.style.boxShadow = '0 8px 20px rgba(0,0,0,0.7), inset 0 0 10px rgba(255,255,255,0.05)';
             flyingEl.style.opacity = '0'; 
             flyingEl.style.transform = 'scale(0.8)'; 
-            flyingEl.innerHTML = ''; 
+            flyingEl.innerHTML = ''; // Vymažeme obsah, aby se zmenšil jen samotný box
             
-        }, 5000); 
+        }, 5000); // Zobrazí fullscreen na 5 SEKUND
 
         flyingEl.addEventListener('transitionend', () => {
             flyingEl.remove();
