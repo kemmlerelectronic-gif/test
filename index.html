@@ -38,10 +38,29 @@ box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
     text-shadow: 0 0 15px rgba(56, 178, 172, 0.8), 0 0 25px rgba(129, 230, 217, 0.6); /* Zářivý neonový stín */
     letter-spacing: 1px; /* Jemné rozestupy */
     transition: all 0.3s ease;
+    /* Nová pulzující animace pro logo */
+    animation: logoPulse 4s infinite alternate ease-in-out;
 }
-.logo:hover { /* Jemná animace na hover pro logo */
-    transform: scale(1.02);
-    text-shadow: 0 0 20px rgba(56, 178, 172, 1), 0 0 30px rgba(129, 230, 217, 0.8);
+/* Keyframes pro pulzování loga */
+@keyframes logoPulse {
+    0% {
+        background: linear-gradient(45deg, #38b2ac, #81e6d9);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 15px rgba(56, 178, 172, 0.8), 0 0 25px rgba(129, 230, 217, 0.6);
+    }
+    50% {
+        background: linear-gradient(45deg, #22c55e, #1a9a4e); /* Zelená barva */
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 20px rgba(34, 197, 94, 0.9), 0 0 35px rgba(26, 154, 78, 0.7);
+    }
+    100% {
+        background: linear-gradient(45deg, #38b2ac, #81e6d9);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 15px rgba(56, 178, 172, 0.8), 0 0 25px rgba(129, 230, 217, 0.6);
+    }
 }
 
 /* VYLEPŠENÁ NAVIGAČNÍ TLAČÍTKA */
@@ -89,7 +108,7 @@ overflow: hidden; /* Pro efekty */
 
 .header{
 text-align:center;
-font-size:68px;
+font-size:68px; /* Pro TV */
 background:#111827cc;
 padding:10px;
 transition: all 0.3s ease;
@@ -184,11 +203,12 @@ animation: cardActiveScale 1.2s forwards; /* Vlastní animace pro active stav */
     animation: lisTextBlink 1.2s ease forwards;
 }
 
-/* Styly pro data na kartě */
-.kontakt{font-size:26px;color:#22d3ee; margin-top: 10px; font-weight: 600;} /* Trochu větší, bold */
-.prurez{font-size:24px;color:#fbbf24; margin-top: 5px; font-weight: 600;}
-.jmeno{font-size:22px;color:#a3e635; margin-top: 5px; font-weight: 600;}
-.time{font-size:16px;color:#cbd5f5;margin-top:8px; font-weight: 400;}
+/* Styly pro data na kartě - ZVĚTŠENÍ PRO TV */
+.card .kontakt{font-size:32px;color:#22d3ee; margin-top: 15px; font-weight: 700;} /* Větší */
+.card .prurez{font-size:28px;color:#fbbf24; margin-top: 10px; font-weight: 700;} /* Větší */
+.card .jmeno{font-size:26px;color:#a3e635; margin-top: 10px; font-weight: 600;} /* Větší */
+.card .time{font-size:20px;color:#cbd5f5;margin-top:12px; font-weight: 400;} /* Větší */
+
 .hotovo{ /* Tlačítko HOTOVO - jen pro nastavení, tam myš je */
 margin-top:15px;
 padding:8px 18px;
@@ -219,22 +239,24 @@ border: 1px solid rgba(34, 197, 94, 0.15);
     color: #22c55e;
     text-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
     margin-bottom: 15px;
+    font-size: 1.8em; /* Větší nadpis fronty */
 }
 
 .queueItem{
-padding:12px;
+padding:15px; /* Větší padding */
 border-bottom:1px solid #1e293b;
-margin-bottom:10px;
+margin-bottom:12px; /* Větší mezera */
 position: relative;
 background: #020617aa; /* Lehce tmavší pozadí pro položky ve frontě */
 border-radius: 8px;
 box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+font-size: 1.2em; /* Větší text pro položky fronty */
 }
 .queueItem:last-child {
     border-bottom: none;
 }
-.queueItem b { color: #22d3ee; } /* Barva pro kontakt */
-.queueItem .time { color: #cbd5f5; font-size: 14px; margin-top: 4px;}
+.queueItem b { color: #22d3ee; font-size: 1.1em;} /* Barva pro kontakt a mírně větší */
+.queueItem .time { color: #cbd5f5; font-size: 0.9em; margin-top: 5px;} /* Trochu větší čas */
 
 .assign button{ /* Tlačítka pro přiřazení - tam myš je */
 margin:2px;
@@ -257,33 +279,56 @@ background:#ef4444;
     background: #dc2626;
 }
 
-input{
-width:100%;
-padding:10px;
-margin-bottom:10px;
-border-radius:8px;
+/* Optimalizace pro mobilní "Požadavky" (inputy a tlačítka) */
+.screen#requests {
+    display: flex; /* Použijeme flexbox pro centrování obsahu */
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 100px); /* Přizpůsobitelná výška */
+}
+.screen#requests > div { /* Kontejner pro formulář */
+    max-width: 90%; /* Pro mobily širší */
+    width: 400px; /* Max šířka pro desktopy */
+    margin: 20px auto; /* Centrování a mezera */
+    padding: 20px;
+    background: linear-gradient(145deg, #020617ee, #111827ee);
+    border-radius: 22px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.7);
+}
+.screen#requests h2 {
+    color: #22c55e;
+    text-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+    margin-bottom: 25px;
+    font-size: 2em; /* Větší nadpis */
+}
+.screen#requests input{
+width: calc(100% - 20px); /* Plná šířka s paddingem */
+padding:15px; /* Větší padding pro dotyk */
+margin-bottom:15px;
+border-radius:10px; /* Více zaoblené */
 border:1px solid #1e293b;
 background: #0f172a;
 color: white;
-box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+font-size: 1.2em; /* Větší font */
 }
-.addBtn{
+.screen#requests .addBtn{
 width:100%;
-padding:12px;
-background: linear-gradient(90deg, #3b82f6, #60a5fa); /* Gradient pro Add button */
+padding:18px; /* Větší padding */
+background: linear-gradient(90deg, #3b82f6, #60a5fa);
 border:none;
-border-radius:8px;
+border-radius:10px; /* Více zaoblené */
 color:white;
 cursor:pointer;
-font-size: 1.1em;
+font-size: 1.4em; /* Větší font */
 font-weight: bold;
-box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+box-shadow: 0 4px 15px rgba(59, 130, 246, 0.6);
 transition: all 0.3s ease;
 }
-.addBtn:hover { /* Hover pro Add button */
+.screen#requests .addBtn:hover {
     background: linear-gradient(90deg, #60a5fa, #3b82f6);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(59, 130, 246, 0.6);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.8);
 }
 
 .popup{
@@ -608,7 +653,7 @@ function blink(p,i,assigned=false){
   const header=document.getElementById("mainHeader");
   header.innerText=`${p.kontakt} - ${p.prurez} - ${p.jmeno} → LIS ${i+1}`;
   header.classList.add("blink");
-  setTimeout(()=>header.classList.remove("blink"),3000);
+  setTimeout(()=>header.classList.remove("blink"),10000); /* Změna zde: 10 sekund blikání */
 
   const currentScreen=document.querySelector(".screen:not([style*='display: none'])")?.id;
   if(currentScreen==="production"){ 
@@ -623,11 +668,12 @@ function animateFlyingRequest(sourceEl, targetEl, requestData) {
     return new Promise(resolve => {
         const flyingEl = document.createElement('div');
         flyingEl.className = 'flying-request';
+        // Vylepšení obsahu létajícího elementu
         flyingEl.innerHTML = `
-            <div style="text-align: center;">
-                <div style="font-size: 1.0em; font-weight: bold;">${requestData.kontakt}</div>
-                <div style="font-size: 0.9em;">${requestData.prurez}</div>
-                <div style="font-size: 0.8em;">${requestData.jmeno}</div>
+            <div style="text-align: center; font-size: 1.2em;">
+                <div style="font-weight: bold; color: #22d3ee;">${requestData.kontakt}</div>
+                <div style="font-size: 0.8em; color: #fbbf24;">${requestData.prurez}</div>
+                <div style="font-size: 0.7em; color: #a3e635;">${requestData.jmeno}</div>
             </div>
         `;
         document.body.appendChild(flyingEl);
@@ -663,11 +709,12 @@ function animateFlyingRequestFromCenter(targetEl, requestDetails) {
     return new Promise(resolve => {
         const flyingEl = document.createElement('div');
         flyingEl.className = 'flying-request';
+        // Vylepšení obsahu létajícího elementu
         flyingEl.innerHTML = `
-            <div style="text-align: center;">
-                <div style="font-size: 1.0em; font-weight: bold;">${requestDetails.kontakt}</div>
-                <div style="font-size: 0.9em;">${requestDetails.prurez}</div>
-                <div style="font-size: 0.8em;">${requestDetails.jmeno}</div>
+            <div style="text-align: center; font-size: 1.2em;">
+                <div style="font-weight: bold; color: #22d3ee;">${requestDetails.kontakt}</div>
+                <div style="font-size: 0.8em; color: #fbbf24;">${requestDetails.prurez}</div>
+                <div style="font-size: 0.7em; color: #a3e635;">${requestDetails.jmeno}</div>
             </div>
         `;
         document.body.appendChild(flyingEl);
@@ -677,6 +724,7 @@ function animateFlyingRequestFromCenter(targetEl, requestDetails) {
         // Dynamicky nastavená šířka pro flyingEl, aby byl text vidět
         flyingEl.style.width = '300px'; 
         flyingEl.style.height = '120px'; /* Dostatek místa pro text */
+        flyingEl.style.whiteSpace = 'normal'; /* Aby se text zalomil */
 
         const startX = window.innerWidth / 2 - (flyingEl.offsetWidth / 2);
         const startY = window.innerHeight / 2 - (flyingEl.offsetHeight / 2);
