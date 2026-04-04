@@ -224,7 +224,21 @@ display:none;
     display: flex; /* Aby text byl centrovaný */
     align-items: center;
     justify-content: center;
-    transform: scale(0); /* Začínáme z malého bodu */
+    text-align: center;
+}
+
+/* Specific styling for fullscreen animation */
+.flying-request-fullscreen {
+    transition: all 0.8s ease-in-out; /* Pro celou obrazovku */
+    font-size: 80px; /* Větší text */
+    padding: 40px;
+    border-radius: 20px;
+    width: 100vw;
+    height: 100vh;
+    left: 0;
+    top: 0;
+    opacity: 0; /* Začíná schovaná */
+    transform: scale(0.1); /* Zmenšená */
 }
 
 </style>
@@ -318,20 +332,24 @@ onValue(ref(db,'lisy'),snap=>{
   
   currentLisy.forEach(async (lis, i) => { // Použijeme async pro await v animaci
     const oldLis = lastLisy[i];
+    const currentScreen = document.querySelector(".screen:not([style*='display: none'])")?.id;
 
     // Detekce nového přiřazení (pokud lis.kontakt existuje a buď dříve neexistoval, nebo se změnil)
     if (lis.kontakt && (!oldLis || oldLis.kontakt !== lis.kontakt)) {
       blink(lis, i, true); 
     }
 
-    // NOVINKA: Spuštění "létající" animace na pasivních zařízeních
-    // Detekujeme, zda byl lis právě aktualizován s daty pro animaci
+    // Spuštění "létající" animace na pasivních zařízeních
     if (lis.assignedAnimation && lis.assignedAnimation.targetLisIndex === i) {
-        // Spustíme animaci z centrální pozice k tomuto lisu
         const targetElement = document.getElementById(`lis${i}`);
         if (targetElement) {
-            await animateFlyingRequestFromCenter(targetElement, lis.assignedAnimation.requestDetails);
+            if (currentScreen === "production") { // Speciální animace pro Výrobní obrazovku
+                await animateFlyingRequestFullscreen(targetElement, lis.assignedAnimation.requestDetails);
+            } else { // Standardní animace pro ostatní obrazovky (setup, requests)
+                await animateFlyingRequestFromCenter(targetElement, lis.assignedAnimation.requestDetails);
+            }
             // Po dokončení animace odstraníme data pro animaci z Firebase
+            // Použijeme update s null, aby se odstranil pouze assignedAnimation property
             update(ref(db, `lisy/${i}`), { assignedAnimation: null });
         }
     }
@@ -402,16 +420,25 @@ window.assign=async function(lisIndex,reqIndex){
   const p=pozadavky[reqIndex];
   if (!p) return;
 
-  // Spustíme animaci pro aktuální zařízení
-  const sourceElement = document.getElementById(`request-${p.key}`);
+  const currentScreen = document.querySelector(".screen:not([style*='display: none'])")?.id;
   const targetElement = document.getElementById(`lis${lisIndex}`);
 
-  if (sourceElement && targetElement) {
-    await animateFlyingRequest(sourceElement, targetElement, p);
+  // Animace pro aktuální zařízení, kde dochází k přiřazení
+  // Zde zohledňujeme, jestli je aktivní production obrazovka
+  if (currentScreen === "production" && targetElement) {
+      // Pokud jsme na production obrazovce a přiřazujeme, animujeme přímo fullscreen
+      await animateFlyingRequestFullscreen(targetElement, p);
+  } else {
+      // Jinak, pokud je sourceElement dostupný, animujeme z něj (pro setup/requests)
+      const sourceElement = document.getElementById(`request-${p.key}`);
+      if (sourceElement && targetElement) {
+          await animateFlyingRequest(sourceElement, targetElement, p);
+      } else if (targetElement) { // Fallback pro případ, že zdrojový element není k dispozici (např. stránka nebyla reloadnuta)
+          await animateFlyingRequestFromCenter(targetElement, p);
+      }
   }
 
   // Aktualizujeme Firebase pro lis
-  // PŘIDÁNO: assignedAnimation objekt pro spuštění animace na jiných zařízeních
   set(ref(db,`lisy/${lisIndex}`),{
     kontakt:p.kontakt,
     prurez:p.prurez,
@@ -479,7 +506,7 @@ function blink(p,i,assigned=false){
   tone();
 }
 
-// Původní animace z fronty na lis (pro zařízení, kde došlo k akci assign)
+// Původní animace z fronty na lis (pro zařízení, kde došlo k akci assign a není to production)
 function animateFlyingRequest(sourceEl, targetEl, requestData) {
     return new Promise(resolve => {
         const flyingEl = document.createElement('div');
@@ -495,7 +522,6 @@ function animateFlyingRequest(sourceEl, targetEl, requestData) {
         flyingEl.style.width = `${sourceRect.width}px`; 
         flyingEl.style.height = `${sourceRect.height}px`; 
         
-        // Změna: začíná z plné velikosti a na své pozici
         flyingEl.style.transform = `translate(0, 0) scale(1)`; 
         flyingEl.style.opacity = '1';
 
@@ -503,7 +529,6 @@ function animateFlyingRequest(sourceEl, targetEl, requestData) {
         const targetY = targetRect.top + (targetRect.height / 2) - (sourceRect.height / 2);
 
         requestAnimationFrame(() => {
-            // Cílová transformace
             flyingEl.style.transform = `translate(${targetX - sourceRect.left}px, ${targetY - sourceRect.top}px) scale(0.5)`;
             flyingEl.style.opacity = '0';
         });
@@ -515,7 +540,7 @@ function animateFlyingRequest(sourceEl, targetEl, requestData) {
     });
 }
 
-// NOVÁ animace z centrální pozice na lis (pro pasivní zařízení)
+// Animace z centrální pozice na lis (pro pasivní zařízení, pokud není production)
 function animateFlyingRequestFromCenter(targetEl, requestDetails) {
     return new Promise(resolve => {
         const flyingEl = document.createElement('div');
@@ -525,33 +550,62 @@ function animateFlyingRequestFromCenter(targetEl, requestDetails) {
 
         const targetRect = targetEl.getBoundingClientRect();
 
-        // Střed obrazovky jako startovní bod pro pasivní zařízení
         const startX = window.innerWidth / 2 - (flyingEl.offsetWidth / 2);
         const startY = window.innerHeight / 2 - (flyingEl.offsetHeight / 2);
 
         flyingEl.style.left = `${startX}px`;
         flyingEl.style.top = `${startY}px`;
-        // flyingEl.style.width = '200px'; // Můžete nastavit pevnou šířku/výšku
-        // flyingEl.style.height = '60px'; // nebo nechat na obsahu
 
-        // Začínáme z malého bodu uprostřed
         flyingEl.style.transform = `scale(0)`; 
         flyingEl.style.opacity = '0';
 
         requestAnimationFrame(() => {
-            // Zvětší se na normální velikost uprostřed a pak letí
             flyingEl.style.transform = `scale(1)`;
             flyingEl.style.opacity = '1';
             
-            setTimeout(() => { // Dáme animaci chvilku, aby se projevilo zvětšení uprostřed
+            setTimeout(() => { 
                 const targetX = targetRect.left + (targetRect.width / 2) - (flyingEl.offsetWidth / 2);
                 const targetY = targetRect.top + (targetRect.height / 2) - (flyingEl.offsetHeight / 2);
                 
-                flyingEl.style.transition = 'transform 0.8s ease-in-out, opacity 0.8s ease-in-out'; // Reset transition pro druhou fázi
-                flyingEl.style.transform = `translate(${targetX - startX}px, ${targetY - startY}px) scale(0.5)`; // Cíl
+                flyingEl.style.transition = 'transform 0.8s ease-in-out, opacity 0.8s ease-in-out';
+                flyingEl.style.transform = `translate(${targetX - startX}px, ${targetY - startY}px) scale(0.5)`;
                 flyingEl.style.opacity = '0';
-            }, 500); // Počkejme půl sekundy po objevení se, než začne letět
+            }, 500); 
         });
+
+        flyingEl.addEventListener('transitionend', () => {
+            flyingEl.remove();
+            resolve();
+        }, { once: true });
+    });
+}
+
+// NOVÁ ANIMACE: Letí z fullscreen na lis (pro production obrazovku)
+function animateFlyingRequestFullscreen(targetEl, requestDetails) {
+    return new Promise(resolve => {
+        const flyingEl = document.createElement('div');
+        flyingEl.className = 'flying-request flying-request-fullscreen'; /* Přidáme fullscreen třídu */
+        flyingEl.innerText = `${requestDetails.kontakt} - ${requestDetails.prurez} - ${requestDetails.jmeno}`;
+        document.body.appendChild(flyingEl);
+
+        const targetRect = targetEl.getBoundingClientRect();
+
+        // Fáze 1: Objeví se a zvětší na fullscreen
+        requestAnimationFrame(() => {
+            flyingEl.style.opacity = '1';
+            flyingEl.style.transform = 'scale(1)'; /* Zvětší na celou obrazovku */
+        });
+
+        // Fáze 2: Zůstane chvíli na fullscreen, pak se zmenší a letí
+        setTimeout(() => {
+            const targetX = targetRect.left + (targetRect.width / 2) - (flyingEl.offsetWidth / 2);
+            const targetY = targetRect.top + (targetRect.height / 2) - (flyingEl.offsetHeight / 2);
+
+            // Nastavíme transition pro let do lisu (změníme na transform a opacity, ne all)
+            flyingEl.style.transition = 'transform 0.8s ease-in-out, opacity 0.8s ease-in-out';
+            flyingEl.style.transform = `translate(${targetX - flyingEl.offsetLeft}px, ${targetY - flyingEl.offsetTop}px) scale(0.2)`; /* Letí a zmenší se */
+            flyingEl.style.opacity = '0';
+        }, 1500); // Zobrazí fullscreen na 1.5 sekundy
 
         flyingEl.addEventListener('transitionend', () => {
             flyingEl.remove();
