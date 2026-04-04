@@ -24,29 +24,69 @@ display:flex;
 justify-content:space-between;
 align-items:center;
 padding:15px 25px;
+background: rgba(0, 0, 0, 0.6); /* Lehce průhledné pozadí pro topbar */
+box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
+
+/* VYLEPŠENÝ TEXT LOGA */
 .logo {
-    font-size: 36px;
-    font-weight: bold;
-    background: linear-gradient(45deg, #22c55e, #1a9a4e); /* Jemnější gradient */
+    font-size: 38px; /* Trochu větší */
+    font-weight: 900; /* Extra bold */
+    background: linear-gradient(45deg, #38b2ac, #81e6d9); /* Jasnější tyrkysový gradient */
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-shadow: 2px 2px 6px rgba(0,0,0,0.5);
+    text-shadow: 0 0 15px rgba(56, 178, 172, 0.8), 0 0 25px rgba(129, 230, 217, 0.6); /* Zářivý neonový stín */
+    letter-spacing: 1px; /* Jemné rozestupy */
+    transition: all 0.3s ease;
 }
+.logo:hover { /* Jemná animace na hover pro logo */
+    transform: scale(1.02);
+    text-shadow: 0 0 20px rgba(56, 178, 172, 1), 0 0 30px rgba(129, 230, 217, 0.8);
+}
+
+/* VYLEPŠENÁ NAVIGAČNÍ TLAČÍTKA */
 .nav button{
-padding:8px 16px;
-margin-left:6px;
+padding:12px 22px; /* Větší padding */
+margin-left:10px; /* Větší mezera */
 border:none;
-border-radius:6px;
-background:#22c55e;
+border-radius:8px; /* Více zaoblené */
+background: linear-gradient(135deg, #22c55e, #1a9a4e); /* Gradient */
 color:white;
 cursor:pointer;
-transition: background 0.3s ease, transform 0.2s ease;
+font-size: 1.1em; /* Větší text */
+font-weight: 600; /* Bold */
+box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4); /* 3D stín */
+transition: all 0.3s ease; /* Plynulý přechod */
+position: relative;
+overflow: hidden; /* Pro efekty */
 }
-.nav button:hover { /* Hover pro tlačítka nav, kde myš je */
-    background: #1a9a4e;
-    transform: translateY(-2px);
+.nav button::before { /* Jemná světelná záře */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    transform: skewX(-30deg);
+    transition: all 0.5s ease;
 }
+.nav button:hover::before {
+    left: 100%;
+}
+.nav button:hover {
+    background: linear-gradient(135deg, #1a9a4e, #22c55e); /* Otočený gradient při hoveru */
+    transform: translateY(-3px) scale(1.02); /* Mírné zvednutí a zvětšení */
+    box-shadow: 0 8px 25px rgba(34, 197, 94, 0.6); /* Výraznější stín */
+}
+/* Aktivní tlačítko */
+.nav button.active-nav {
+    background: linear-gradient(135deg, #0f4f2c, #166534); /* Tmavší zelená pro aktivní */
+    box-shadow: 0 2px 10px rgba(34, 197, 94, 0.8), inset 0 0 8px rgba(34, 197, 94, 0.6);
+    transform: translateY(0);
+    border: 1px solid #22c55e;
+}
+
 .header{
 text-align:center;
 font-size:68px;
@@ -583,7 +623,13 @@ function animateFlyingRequest(sourceEl, targetEl, requestData) {
     return new Promise(resolve => {
         const flyingEl = document.createElement('div');
         flyingEl.className = 'flying-request';
-        flyingEl.innerText = `${requestData.kontakt} - ${requestData.prurez} - ${requestData.jmeno}`;
+        flyingEl.innerHTML = `
+            <div style="text-align: center;">
+                <div style="font-size: 1.0em; font-weight: bold;">${requestData.kontakt}</div>
+                <div style="font-size: 0.9em;">${requestData.prurez}</div>
+                <div style="font-size: 0.8em;">${requestData.jmeno}</div>
+            </div>
+        `;
         document.body.appendChild(flyingEl);
 
         const sourceRect = sourceEl.getBoundingClientRect();
@@ -617,10 +663,20 @@ function animateFlyingRequestFromCenter(targetEl, requestDetails) {
     return new Promise(resolve => {
         const flyingEl = document.createElement('div');
         flyingEl.className = 'flying-request';
-        flyingEl.innerText = `${requestDetails.kontakt} - ${requestDetails.prurez} - ${requestDetails.jmeno}`;
+        flyingEl.innerHTML = `
+            <div style="text-align: center;">
+                <div style="font-size: 1.0em; font-weight: bold;">${requestDetails.kontakt}</div>
+                <div style="font-size: 0.9em;">${requestDetails.prurez}</div>
+                <div style="font-size: 0.8em;">${requestDetails.jmeno}</div>
+            </div>
+        `;
         document.body.appendChild(flyingEl);
 
         const targetRect = targetEl.getBoundingClientRect();
+
+        // Dynamicky nastavená šířka pro flyingEl, aby byl text vidět
+        flyingEl.style.width = '300px'; 
+        flyingEl.style.height = '120px'; /* Dostatek místa pro text */
 
         const startX = window.innerWidth / 2 - (flyingEl.offsetWidth / 2);
         const startY = window.innerHeight / 2 - (flyingEl.offsetHeight / 2);
@@ -675,10 +731,10 @@ function animateFlyingRequestFullscreen(targetEl, requestDetails) {
             flyingEl.style.transform = 'scale(1)'; 
         });
 
-        // Fáze 2 & 3: Zůstane chvíli fullscreen, pak se přesune a sroluje do lisu
+        // Fáze 2 & 3: Zůstane chvíli fullscreen (nyní 5 sekund), pak se přesune a sroluje do lisu
         setTimeout(() => {
-            const currentLisData = lisy[requestDetails.targetLisIndex]; // Získání dat lisu, aby animace mohla převzít jeho barvu
-            const finalBackground = currentLisData.kontakt ? 'linear-gradient(145deg, #16653499, #1a9a4e99)' : 'linear-gradient(145deg, #020617ee, #111827ee)'; // Barva lisu po přiřazení nebo defaultní
+            const currentLisData = lisy[requestDetails.targetLisIndex]; 
+            const finalBackground = currentLisData.kontakt ? 'linear-gradient(145deg, #16653499, #1a9a4e99)' : 'linear-gradient(145deg, #020617ee, #111827ee)'; 
 
             const finalX = targetRect.left;
             const finalY = targetRect.top;
@@ -694,14 +750,14 @@ function animateFlyingRequestFullscreen(targetEl, requestDetails) {
             flyingEl.style.top = `${finalY}px`;
             flyingEl.style.width = `${finalWidth}px`;
             flyingEl.style.height = `${finalHeight}px`;
-            flyingEl.style.fontSize = `1.2em`; /* Zmenšíme na velikost textu na kartě */
+            flyingEl.style.fontSize = `1.2em`; 
             flyingEl.style.borderRadius = `${finalBorderRadius}px`;
             flyingEl.style.background = finalBackground; 
             flyingEl.style.opacity = '0'; 
             flyingEl.style.transform = 'scale(0.8)'; 
-            flyingEl.innerHTML = ''; // Vymažeme text, jakmile se sroluje
+            flyingEl.innerHTML = ''; 
             
-        }, 1500); // Zobrazí fullscreen na 1.5 sekundy
+        }, 5000); // Zobrazí fullscreen na 5 SEKUND
 
         flyingEl.addEventListener('transitionend', () => {
             flyingEl.remove();
@@ -743,13 +799,27 @@ function tone(){
   o.stop(ctx.currentTime+0.25);
 }
 
+// Přidáno pro správu aktivního tlačítka v navigaci
+let currentActiveButton = null;
+function setActiveNavButton(buttonId) {
+    if (currentActiveButton) {
+        currentActiveButton.classList.remove('active-nav');
+    }
+    const newActiveButton = document.querySelector(`.nav button[onclick*="showScreen('${buttonId}')"]`);
+    if (newActiveButton) {
+        newActiveButton.classList.add('active-nav');
+        currentActiveButton = newActiveButton;
+    }
+}
+
 window.showScreen=function(id){
     document.querySelectorAll(".screen").forEach(s=>s.style.display="none");
     document.getElementById(id).style.display="block";
     updateHeader();
+    setActiveNavButton(id); // Nastaví aktivní stav tlačítku
 }
 
-showScreen("setup");
+showScreen("setup"); // Nastaví Setup jako výchozí a aktivuje jeho tlačítko
 setInterval(()=>{
   const production = document.getElementById("production");
   if(production.style.display !== "block") return;
