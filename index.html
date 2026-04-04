@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>KEMMSOFT 4.0 Testing</title>
+<style>
+/* Základní styly */
+body{
+font-family: 'Segoe UI', Arial, sans-serif; /* Moderní bezpatkový font */
+background:url("background.png") center/cover fixed;
+margin:0;
+color:white;
+overflow-x: hidden; /* Zamezí horizontálnímu scrollu kvůli animacím */
+}
+body::before{
+content:"";
+position:fixed;
+inset:0;
+background:rgba(0,0,0,0.4);
+z-index:-1;
+}
+.topbar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:15px 25px;
+background: rgba(0, 0, 0, 0.6); /* Lehce průhledné pozadí pro topbar */
+box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+transition: all 0.3s ease; /* Pro animaci skrytí/zobrazení */
+}
+.topbar.hidden { /* Třída pro skrytí topbaru */
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none; /* Zakáže interakci s neviditelným topbarem */
+}
+
+/* VYLEPŠENÝ TEXT LOGA */
+.logo {
+    font-size: 38px; /* Trochu větší */
+    font-weight: 900; /* Extra bold */
+    background: linear-gradient(45deg, #22c55e, #34d399); /* Původní zelená pro logo */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 15px rgba(34, 197, 94, 0.8), 0 0 25px rgba(52, 211, 153, 0.6); /* Zářivý neonový stín */
+    letter-spacing: 1px; /* Jemné rozestupy */
+    transition: all 0.3s ease;
+    animation: logoPulse 4s infinite alternate ease-in-out;
+}
+/* Keyframes pro pulzování loga - pouze zeleno-černě */
+@keyframes logoPulse {
+    0% {
+        background: linear-gradient(45deg, #22c55e, #34d399);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 15px rgba(34, 197, 94, 0.8), 0 0 25px rgba(52, 211, 153, 0.6);
+    }
+    50% {
+        background: linear-gradient(45deg, #111827, #020617); /* Tmavá barva pozadí */
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 5px rgba(0,0,0,0.5); /* Jemný tmavý stín */
+    }
+    100% {
+        background: linear-gradient(45deg, #22c55e, #34d399);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 15px rgba(34, 197, 94, 0.8), 0 0 25px rgba(52, 211, 153, 0.6);
+    }
+}
+
+/* VYLEPŠENÁ NAVIGAČNÍ TLAČÍTKA */
+.nav button{
+padding:12px 22px; /* Větší padding */
+margin-left:10px; /* Větší mezera */
+border:none;
+border-radius:8px; /* Více zaoblené */
+background: linear-gradient(135deg, #22c55e, #1a9a4e); /* Gradient */
+color:white;
+cursor:pointer;
+font-size: 1.1em; /* Větší text */
+font-weight: 600; /* Bold */
+box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4); /* 3D stín */
+transition: all 0.3s ease; /* Plynulý přechod */
+position: relative;
+overflow: hidden; /* Pro efekty */
+}
+.nav button::before { /* Jemná světelná záře */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    transform: skewX(-30deg);
+    transition: all 0.5s ease;
+}
+.nav button:hover::before {
+    left: 100%;
+}
+.nav button:hover {
+    background: linear-gradient(135deg, #1a9a4e, #22c55e); /* Otočený gradient při hoveru */
+    transform: translateY(-3px) scale(1.02); /* Mírné zvednutí a zvětšení */
+    box-shadow: 0 8px 25px rgba(34, 197, 94, 0.6); /* Výraznější stín */
+}
+/* Aktivní tlačítko */
+.nav button.active-nav {
+    background: linear-gradient(135deg, #0f4f2c, #166534); /* Tmavší zelená pro aktivní */
+    box-shadow: 0 2px 10px rgba(34, 197, 94, 0.8), inset 0 0 8px rgba(34, 197, 94, 0.6);
+    transform: translateY(0);
+    border: 1px solid #22c55e;
+}
+
+.header{
+text-align:center;
+font-size:68px; /* Pro TV */
+background:#111827cc;
+padding:10px;
+transition: all 0.3s ease;
+text-shadow: 2px 2px 8px rgba(0,0,0,0.7); /* Vylepšený stín */
+border-bottom: 2px solid rgba(34, 197, 94, 0.5); /* Moderní linka */
+}
+@keyframes headerBlink {
+  0%, 100% { color: #22c55e; text-shadow: 0 0 15px #22c55e; }
+  50% { color: #ffffff; text-shadow: none; }
+}
+.header.blink {
+  animation: headerBlink 1s infinite;
+}
+.layout{
+display:grid;
+grid-template-columns:4fr 1.3fr;
+gap:20px;
+padding:20px;
+}
+.rowTop{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:20px;
+margin-bottom:20px;
+}
+.rowBottom{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:20px;
+}
+
+/* KARTY LISŮ - VIZUÁLNÍ TUNING PRO VÝROBNÍ OBRAZOVKU */
+.card{
+background: linear-gradient(145deg, #020617ee, #111827ee); /* Dynamický tmavý gradient */
+padding:25px;
+border-radius:22px; /* Více zaoblené rohy */
+text-align:center;
+transition: all .4s ease-out; /* Dlouhý a plynulý transition pro všechny stavy */
+position: relative;
+box-shadow: 0 8px 20px rgba(0,0,0,0.7), inset 0 0 10px rgba(255,255,255,0.05); /* Hluboký vnější a jemný vnitřní stín */
+border: 1px solid rgba(34, 197, 94, 0.15); /* Jemný okraj */
+}
+
+/* Stav PŘIŘAZENO (ASSIGNED) */
+.card.assigned{
+background: linear-gradient(145deg, #16653499, #1a9a4e99); /* Zelenější, ale stále průhledný gradient */
+color: #e0ffe0; /* Světle zelený text, aby vynikl */
+box-shadow: 0 0 30px rgba(34, 197, 94, 0.7), inset 0 0 15px rgba(34, 197, 94, 0.5); /* Zářivější zelený stín */
+border-color: #22c55e;
+animation: pulseBorder 2s infinite ease-in-out; /* Nová pulzující animace okraje */
+}
+@keyframes pulseBorder {
+    0% { border-color: rgba(34, 197, 94, 0.5); box-shadow: 0 0 30px rgba(34, 197, 94, 0.7), inset 0 0 15px rgba(34, 197, 94, 0.5); }
+    50% { border-color: rgba(34, 197, 94, 0.9); box-shadow: 0 0 45px rgba(34, 197, 94, 0.9), inset 0 0 20px rgba(34, 197, 94, 0.7); }
+    100% { border-color: rgba(34, 197, 94, 0.5); box-shadow: 0 0 30px rgba(34, 197, 94, 0.7), inset 0 0 15px rgba(34, 197, 94, 0.5); }
+}
+
+/* Stav AKTIVNÍ (ACTIVE) - při novém přiřazení */
+.card.active{ 
+background: linear-gradient(145deg, #22c55e, #1a9a4e); /* Plný, jasný zelený gradient */
+color: #000; /* Text černej, maximální kontrast */
+box-shadow: 0 0 80px rgba(34, 197, 94, 0.9), 0 0 30px rgba(255,255,255,0.6); /* Super zářivá, bílý okraj */
+transform: scale(1.08); /* Trochu větší zvětšení */
+border-color: #22c55e;
+animation: cardActiveScale 1.2s forwards; /* Vlastní animace pro active stav */
+}
+@keyframes cardActiveScale {
+    0% { transform: scale(1); box-shadow: 0 8px 20px rgba(0,0,0,0.7), inset 0 0 10px rgba(255,255,255,0.05); }
+    50% { transform: scale(1.1); box-shadow: 0 0 80px rgba(34, 197, 94, 0.9), 0 0 30px rgba(255,255,255,0.6); }
+    100% { transform: scale(1.08); box-shadow: 0 0 80px rgba(34, 197, 94, 0.9), 0 0 30px rgba(255,255,255,0.6); }
+}
+
+/* LIS text - VYLEPŠENÝ STYL */
+.lis {
+    font-size: 40px; /* Ještě větší text LIS */
+    font-weight: 900; /* Extra bold */
+    background: linear-gradient(45deg, #6ee7b7, #34d399); /* Jasnější zelený gradient */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow:
+        6px 6px 12px rgba(0,0,0,0.8), /* Výraznější, hlubší stín */
+        8px 8px 16px rgba(0,0,0,0.7);
+    transition: all 0.3s ease;
+    margin-bottom: 25px; /* Více místa */
+}
+/* Animace textu LIS při aktivním stavu */
+@keyframes lisTextBlink {
+    0%, 100% { transform: scale(1); opacity: 1; text-shadow: 6px 6px 12px rgba(0,0,0,0.8); }
+    50% { transform: scale(1.1); opacity: 0.9; text-shadow: 8px 8px 16px rgba(0,0,0,0.9); }
+}
+.card.active .lis {
+    animation: lisTextBlink 1.2s ease forwards;
+}
+
+/* Styly pro data na kartě - JEŠTĚ VĚTŠÍ PRO TV */
+.card .kontakt{font-size:38px;color:#22d3ee; margin-top: 20px; font-weight: 800;} /* Ještě větší */
+.card .prurez{font-size:34px;color:#fbbf24; margin-top: 15px; font-weight: 700;} /* Ještě větší */
+.card .jmeno{font-size:32px;color:#a3e635; margin-top: 15px; font-weight: 700;} /* Ještě větší */
+.card .time{font-size:24px;color:#cbd5f5;margin-top:15px; font-weight: 500;} /* Větší */
+
+.hotovo{ /* Tlačítko HOTOVO - jen pro nastavení, tam myš je */
+margin-top:15px;
+padding:8px 18px;
+border:none;
+border-radius:8px;
+background:#ef4444;
+color:white;
+cursor:pointer;
+box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4);
+transition: all 0.3s ease;
+}
+.hotovo:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(239, 68, 68, 0.6);
+}
+
+/* FRONTĚ A JEJÍ POLOŽKY - VYLEPŠENÍ A PULZOVÁNÍ PŘI PŘÍCHODU */
+.queue{
+background: linear-gradient(145deg, #020617ee, #111827ee); /* Stejný gradient jako karty */
+padding:20px;
+border-radius:22px;
+max-height:80vh;
+overflow-y:auto;
+box-shadow: 0 8px 20px rgba(0,0,0,0.7), inset 0 0 10px rgba(255,255,255,0.05);
+border: 1px solid rgba(34, 197, 94, 0.15);
+}
+.queue h3 {
+    color: #22c55e;
+    text-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+    margin-bottom: 15px;
+    font-size: 1.8em; /* Větší nadpis fronty */
+}
+
+.queueItem{
+padding:15px; /* Větší padding */
+border-bottom:1px solid #1e293b;
+margin-bottom:12px; /* Větší mezera */
+position: relative;
+background: #020617aa; /* Lehce tmavší pozadí pro položky ve frontě */
+border-radius: 8px;
+box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+font-size: 1.3em; /* Větší text pro položky fronty */
+transition: all 0.3s ease-in-out; /* Pro hladké přechody animace */
+transform-origin: center center; /* Pro správnou animaci zvětšení */
+}
+.queueItem:last-child {
+    border-bottom: none;
+}
+.queueItem b { color: #22d3ee; font-size: 1.1em;} /* Barva pro kontakt a mírně větší */
+.queueItem .time { color: #cbd5f5; font-size: 0.9em; margin-top: 5px;} /* Trochu větší čas */
+
+/* ANIMACE PŘÍCHOZÍHO POŽADAVKU DO FRONTĚ */
+.queueItem.new-request-pulse {
+    animation: newRequestPulse 4s forwards ease-in-out; /* Animace 4s dopředu */
+}
+@keyframes newRequestPulse {
+    0% {
+        background: linear-gradient(145deg, #FF8C00, #FFA500); /* Oranžová */
+        box-shadow: 0 0 20px rgba(255, 140, 0, 0.8), 0 0 10px rgba(255, 165, 0, 0.6);
+        transform: scale(1.25); /* O 1/4 větší */
+        border-color: #FFA500;
+        color: black;
+    }
+    50% {
+        background: linear-gradient(145deg, #FFA500, #FFD700); /* Světlejší oranžová/zlatá */
+        box-shadow: 0 0 35px rgba(255, 165, 0, 1), 0 0 15px rgba(255, 215, 0, 0.8);
+        transform: scale(1.28); /* Mírně větší pulz */
+        border-color: #FFD700;
+        color: black;
+    }
+    100% {
+        background: #020617aa; /* Zpět na původní tmavé pozadí */
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        transform: scale(1); /* Zpět na původní velikost */
+        border-color: transparent;
+        color: white; /* Zpět na bílý text */
+    }
+}
+
+.assign button{ /* Tlačítka pro přiřazení - tam myš je */
+margin:2px;
+padding:6px 10px;
+border:none;
+border-radius:6px;
+background:#22c55e;
+color:white;
+cursor:pointer;
+transition: background 0.2s ease, transform 0.1s ease;
+}
+.assign button:hover {
+    background: #1a9a4e;
+    transform: translateY(-1px);
+}
+.assign .delete{
+background:#ef4444;
+}
+.assign .delete:hover {
+    background: #dc2626;
+}
+
+/* Inputy a Add button v setup screen */
+#setup input{
+width:100%;
+padding:10px;
+margin-bottom:10px;
+border-radius:8px;
+border:1px solid #1e293b;
+background: #0f172a;
+color: white;
+box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+}
+#setup .addBtn{
+width:100%;
+padding:12px;
+background: linear-gradient(90deg, #3b82f6, #60a5fa); /* Gradient pro Add button */
+border:none;
+border-radius:8px;
+color:white;
+cursor:pointer;
+font-size: 1.1em;
+font-weight: bold;
+box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+transition: all 0.3s ease;
+}
+#setup .addBtn:hover { /* Hover pro Add button */
+    background: linear-gradient(90deg, #60a5fa, #3b82f6);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(59, 130, 246, 0.6);
+}
+
+/* Optimalizace pro mobilní "Požadavky" */
+.screen#requests {
+    display: flex; /* Použijeme flexbox pro centrování obsahu */
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 50px); /* Přizpůsobitelná výška */
+}
+.screen#requests > div { /* Kontejner pro formulář */
+    max-width: 90%; /* Pro mobily širší */
+    width: 400px; /* Max šířka pro desktopy */
+    margin: 20px auto; /* Centrování a mezera */
+    padding: 25px; /* Větší padding */
+    background: linear-gradient(145deg, #020617ee, #111827ee);
+    border-radius: 22px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.7);
+}
+.screen#requests h2 {
+    color: #22c55e;
+    text-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+    margin-bottom: 30px; /* Větší mezera */
+    font-size: 2.2em; /* Ještě větší nadpis */
+}
+.screen#requests input{
+width: calc(100% - 30px); /* Plná šířka s větším paddingem */
+padding:18px; /* Větší padding pro dotyk */
+margin-bottom:20px; /* Větší mezera */
+border-radius:12px; /* Více zaoblené */
+border:1px solid #1e293b;
+background: #0f172a;
+color: white;
+box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+font-size: 1.4em; /* Ještě větší font */
+}
+.screen#requests .addBtn{
+width:100%;
+padding:20px; /* Větší padding */
+background: linear-gradient(90deg, #3b82f6, #60a5fa);
+border:none;
+border-radius:12px; /* Více zaoblené */
+color:white;
+cursor:pointer;
+font-size: 1.6em; /* Ještě větší font */
+font-weight: bold;
+box-shadow: 0 4px 15px rgba(59, 130, 246, 0.6);
+transition: all 0.3s ease;
+}
+.screen#requests .addBtn:hover {
+    background: linear-gradient(90deg, #60a5fa, #3b82f6);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.8);
+}
+
+.popup{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.92);
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:90px;
+font-weight:bold;
+color:#22c55e;
+z-index:100;
+text-align:center;
+padding:40px;
+display:none;
+}
+.fullscreenPopup{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.95);
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:80px;
+font-weight:bold;
+color:#22c55e;
+z-index:200;
+text-align:center;
+padding:40px;
+display:none;
+}
+.screen{display:none}
+
+/* Styl pro animovaný "létající" prvek */
+.flying-request {
+    position: fixed;
+    z-index: 9999;
+    background: linear-gradient(45deg, #22c55e, #fbbf24); /* Barva požadavku */
+    color: white;
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-size: 1.2em;
+    font-weight: bold;
+    white-space: nowrap;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    display: flex; /* Aby text byl centrovaný */
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: all 0.8s ease-in-out; /* Univerzální transition pro létající prvky */
+}
+
+/* Specific styling for fullscreen animation */
+.flying-request-fullscreen {
+    font-size: 80px; /* Větší text */
+    padding: 40px;
+    border-radius: 20px;
+    width: 100vw;
+    height: 100vh;
+    left: 0;
+    top: 0;
+    opacity: 0; /* Začíná schovaná */
+    transform: scale(0.1); /* Zmenšená */
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="topbar" id="mainTopbar">
+<div class="logo">KEMMSOFT 4.0 Testing</div>
+<div class="nav">
+<button onclick="showScreen('setup')">Nastavení</button>
+<button onclick="showScreen('production')">Výrobní obrazovka</button>
+<button onclick="showScreen('requests')">Požadavky</button>
+</div>
+</div>
+
+<div class="header" id="mainHeader">---</div>
+<div class="popup" id="popup"></div>
+<div class="fullscreenPopup" id="fullscreenPopup"></div>
+
+<!-- NASTAVENI -->
+<div id="setup" class="screen">
+<div class="layout">
+<div>
+<div class="rowTop" id="setupTop"></div>
+<div class="rowBottom" id="setupBottom"></div>
+</div>
+<div class="queue">
+<h3>Požadavky</h3>
+<div id="setupQueue"></div>
+<h3>Nový požadavek</h3>
+<input id="setupKontakt" placeholder="Číslo kontaktu">
+<input id="setupPrurez" placeholder="Průřez">
+<input id="setupJmeno" placeholder="Jméno">
+<button class="addBtn" onclick="addRequestSetup()">Odeslat</button>
+</div>
+</div>
+</div>
+
+<!-- VYROBA -->
+<div id="production" class="screen">
+<div class="layout">
+<div>
+<div class="rowTop" id="prodTop"></div>
+<div class="rowBottom" id="prodBottom"></div>
+</div>
+<div class="queue">
+<h3>Požadavky</h3>
+<div id="prodQueue"></div>
+</div>
+</div>
+</div>
+
+<!-- POZADAVKY -->
+<div id="requests" class="screen">
+<div style="max-width:400px;margin:40px auto">
+<h2>Nový požadavek</h2>
+<input id="kontakt" placeholder="Číslo kontaktu">
+<input id="prurez" placeholder="Průřez">
+<input id="jmeno" placeholder="Jméno">
+<button class="addBtn" onclick="addRequest()">Odeslat</button>
+</div>
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getDatabase, ref, push, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+const firebaseConfig={
+apiKey:"AIzaSyAhiCfh-Di_NdPO5rGM7CZFQGaSymcdWxI",
+authDomain:"lisyweb-df6d9.firebaseapp.com",
+databaseURL:"https://lisyweb-df6d9-default-rtdb.firebaseio.com/",
+projectId:"lisyweb-df6d9"
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
+
+const LIS_COUNT=7;
+let lisy=[];
+let pozadavky=[];
+let lastLisy = []; // Nová proměnná pro ukládání předchozího stavu lisy
+let lastPozadavky = []; // Nová proměnná pro ukládání předchozího stavu požadavků
+
+function emptyLis(){ return {kontakt:"",prurez:"",jmeno:"",time:""} }
+function timeNow(){ return new Date().toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'}) }
+
+onValue(ref(db,'lisy'),snap=>{
+  const data=snap.val();
+  const currentLisy = data ? Object.values(data) : Array.from({length:LIS_COUNT},()=>emptyLis());
+  
+  currentLisy.forEach(async (lis, i) => { // Použijeme async pro await v animaci
+    const oldLis = lastLisy[i];
+    const currentScreen = document.querySelector(".screen:not([style*='display: none'])")?.id;
+
+    // Detekce nového přiřazení (pokud lis.kontakt existuje a buď dříve neexistoval, nebo se změnil)
+    if (lis.kontakt && (!oldLis || oldLis.kontakt !== lis.kontakt)) {
+      // Spustíme blink pro kartu a header
+      blink(lis, i, true); 
+    }
+
+    // Spuštění "létající" animace na pasivních zařízeních
+    if (lis.assignedAnimation && lis.assignedAnimation.targetLisIndex === i) {
+        const targetElement = document.getElementById(`lis${i}`);
+        if (targetElement) {
+            const reqDetails = lis.assignedAnimation.requestDetails;
+            if (currentScreen === "production") {
+                await animateFlyingRequestFullscreen(targetElement, reqDetails);
+            } else { // Standardní animace pro ostatní obrazovky (setup, requests)
+                await animateFlyingRequestFromCenter(targetElement, reqDetails);
+            }
+            // Po dokončení animace odstraníme data pro animaci z Firebase
+            update(ref(db, `lisy/${i}`), { assignedAnimation: null });
+        }
+    }
+  });
+
+  lisy = currentLisy;
+  // Zajistíme, aby lisy měly vždy správný počet a pokud chybí, vyplníme prázdnými
+  while(lisy.length < LIS_COUNT) lisy.push(emptyLis());
+  
+  lastLisy = JSON.parse(JSON.stringify(lisy)); // Aktualizujeme lastLisy pro další porovnání
+
+  renderAll();
+  updateHeader();
+});
+
+onValue(ref(db,'pozadavky'),snap=>{
+  const data=snap.val();
+  const currentPozadavky = data ? Object.entries(data).map(([k,v])=>({...v,key:k})) : [];
+
+  const currentScreen = document.querySelector(".screen:not([style*='display: none'])")?.id;
+  // Animace pulzování nového požadavku pro "setup" a "production" obrazovky
+  if (currentScreen === "setup" || currentScreen === "production") {
+      currentPozadavky.forEach(p => {
+          // Zkontrolujeme, zda požadavek s tímto klíčem neexistoval v předchozím stavu
+          if (!lastPozadavky.some(lp => lp.key === p.key)) {
+              setTimeout(() => {
+                  const newRequestEl = document.getElementById(`request-${p.key}`);
+                  if (newRequestEl) {
+                      newRequestEl.classList.add('new-request-pulse');
+                      setTimeout(() => {
+                          newRequestEl.classList.remove('new-request-pulse');
+                      }, 4000); // Animace trvá 4s
+                  }
+              }, 100); // Krátká prodleva pro vykreslení elementu
+          }
+      });
+  }
+
+  pozadavky = currentPozadavky;
+  lastPozadavky = JSON.parse(JSON.stringify(currentPozadavky));
+  
+  renderAll();
+});
+
+function renderAll(){
+  renderLisy("setupTop","setupBottom",true);
+  renderLisy("prodTop","prodBottom",false);
+  renderQueue("setupQueue",true);
+  renderQueue("prodQueue",false);
+}
+
+function renderLisy(topID,bottomID,setup){
+  const top=document.getElementById(topID);
+  const bottom=document.getElementById(bottomID);
+  top.innerHTML=""; bottom.innerHTML="";
+  for(let i=0;i<LIS_COUNT;i++){ // Použijeme LIS_COUNT
+    const d = lisy[i] || emptyLis();
+    const assigned = d.kontakt!=="";
+    const html = `
+      <div class="card ${assigned?'assigned':''}" id="lis${i}">
+        <div class="lis">LIS ${i+1}</div>
+        <div class="kontakt">${d.kontakt||"---"}</div>
+        <div class="prurez">${d.prurez||"---"}</div>
+        <div class="jmeno">${d.jmeno||"---"}</div>
+        <div class="time">${d.time||""}</div>
+        ${setup?`<button class="hotovo" onclick="clearLis(${i})">HOTOVO</button>`:""}
+      </div>
+    `;
+    if(i<3) top.innerHTML += html;
+    else bottom.innerHTML += html;
+  }
+}
+
+function renderQueue(id,setup){
+  const q=document.getElementById(id);
+  q.innerHTML="";
+  pozadavky.forEach((p,i)=>{
+    q.innerHTML+=`
+      <div class="queueItem" id="request-${p.key}">
+        <b>${p.kontakt}</b> - ${p.prurez} - ${p.jmeno}
+        <div class="time">${p.time}</div>
+        ${setup?`
+        <div class="assign">
+          ${[0,1,2,3,4,5,6].map(l=>`<button onclick="assign(${l},${i})">L${l+1}</button>`).join('')}
+          <button class="delete" onclick="deleteReq('${p.key}')">X</button>
+        </div>`:""}
+      </div>`;
+  });
+}
+
+window.assign=async function(lisIndex,reqIndex){
+  const p=pozadavky[reqIndex];
+  if (!p) return;
+
+  const currentScreen = document.querySelector(".screen:not([style*='display: none'])")?.id;
+  const targetElement = document.getElementById(`lis${lisIndex}`);
+
+  // Animace pro aktuální zařízení, kde dochází k přiřazení
+  if (currentScreen === "production" && targetElement) {
+      await animateFlyingRequestFullscreen(targetElement, p);
+  } else {
+      const sourceElement = document.getElementById(`request-${p.key}`);
+      if (sourceElement && targetElement) {
+          await animateFlyingRequest(sourceElement, targetElement, p);
+      } else if (targetElement) { // Pokud není sourceElement, ale je targetElement (např. při pasivní změně)
+          await animateFlyingRequestFromCenter(targetElement, p);
+      }
+  }
+
+  // Uložíme data pro lis do Firebase
+  set(ref(db,`lisy/${lisIndex}`),{
+    kontakt:p.kontakt,
+    prurez:p.prurez,
+    jmeno:p.jmeno,
+    time:timeNow(),
+    assignedAnimation: { // Nový objekt pro data animace - důležité pro pasivní zařízení
+      targetLisIndex: lisIndex,
+      requestDetails: { kontakt: p.kontakt, prurez: p.prurez, jmeno: p.jmeno, targetLisIndex: lisIndex } // Předáme i targetLisIndex
+    }
+  });
+  
+  // Odstraníme požadavek z fronty
+  remove(ref(db,'pozadavky/'+p.key));
+}
+
+window.clearLis=function(i){
+  set(ref(db,`lisy/${i}`),emptyLis());
+}
+
+window.deleteReq=function(key){ remove(ref(db,'pozadavky/'+key)); }
+
+window.addRequest=function(){
+  const kontakt=document.getElementById("kontakt").value;
+  const prurez=document.getElementById("prurez").value;
+  const jmeno=document.getElementById("jmeno").value;
+  if (!kontakt || !prurez || !jmeno) { // Jednoduchá validace
+      alert("Prosím vyplňte všechna pole!");
+      return;
+  }
+  const r=push(ref(db,'pozadavky'));
+  set(r,{kontakt,prurez,jmeno,time:timeNow()});
+  document.getElementById("kontakt").value="";
+  document.getElementById("prurez").value="";
+  document.getElementById("jmeno").value="";
+}
+
+window.addRequestSetup=function(){
+  const kontakt=document.getElementById("setupKontakt").value;
+  const prurez=document.getElementById("setupPrurez").value;
+  const jmeno=document.getElementById("setupJmeno").value;
+    if (!kontakt || !prurez || !jmeno) { // Jednoduchá validace
+      alert("Prosím vyplňte všechna pole!");
+      return;
+  }
+  const r=push(ref(db,'pozadavky'));
+  set(r,{kontakt,prurez,jmeno,time:timeNow()});
+  document.getElementById("setupKontakt").value="";
+  document.getElementById("setupPrurez").value="";
+  document.getElementById("setupJmeno").value="";
+}
+
+function blink(p,i,assigned=false){
+  const card=document.getElementById("lis"+i);
+  if(card){
+    card.classList.add("active");
+    if(assigned) card.classList.add("assigned");
+    // Opraveno: removed ?. from classList.remove
+    setTimeout(()=>{
+        if (card) { // Zkontrolujeme, zda karta stále existuje (např. pokud se stránka nepřenačte)
+            card.classList.remove("active");
+            if(assigned) card.classList.add("assigned");
+        }
+    },1200);
+  }
+
+  const header=document.getElementById("mainHeader");
+  header.innerText=`${p.kontakt} - ${p.prurez} - ${p.jmeno} → LIS ${i+1}`;
+  header.classList.add("blink");
+  setTimeout(()=>header.classList.remove("blink"),10000); /* 10 sekund blikání */
+
+  // showFullscreenPopup se už nepoužívá, nahrazuje ji animateFlyingRequestFullscreen
+  // Zvuk se přehraje automaticky při každém přiřazení
+  tone();
+}
+
+// Původní animace z fronty na lis (pro zařízení, kde došlo k akci assign a není to production)
+function animateFlyingRequest(sourceEl, targetEl, requestData) {
+    return new Promise(resolve => {
+        const flyingEl = document.createElement('div');
+        flyingEl.className = 'flying-request';
+        // Vylepšení obsahu létajícího elementu
+        flyingEl.innerHTML = `
+            <div style="text-align: center; font-size: 1.2em;">
+                <div style="font-weight: bold; color: #22d3ee;">${requestData.kontakt}</div>
+                <div style="font-size: 0.8em; color: #fbbf24;">${requestData.prurez}</div>
+                <div style="font-size: 0.7em; color: #a3e635;">${requestData.jmeno}</div>
+            </div>
+        `;
+        document.body.appendChild(flyingEl);
+
+        const sourceRect = sourceEl.getBoundingClientRect();
+        const targetRect = targetEl.getBoundingClientRect();
+
+        flyingEl.style.left = `${sourceRect.left}px`;
+        flyingEl.style.top = `${sourceRect.top}px`;
+        flyingEl.style.width = `${sourceRect.width}px`; 
+        flyingEl.style.height = `${sourceRect.height}px`; 
+        
+        flyingEl.style.transform = `translate(0, 0) scale(1)`; 
+        flyingEl.style.opacity = '1';
+
+        const targetX = targetRect.left + (targetRect.width / 2) - (sourceRect.width / 2);
+        const targetY = targetRect.top + (targetRect.height / 2) - (sourceRect.height / 2);
+
+        requestAnimationFrame(() => {
+            flyingEl.style.transform = `translate(${targetX - sourceRect.left}px, ${targetY - sourceRect.top}px) scale(0.5)`;
+            flyingEl.style.opacity = '0';
+        });
+
+        flyingEl.addEventListener('transitionend', () => {
+            flyingEl.remove();
+            resolve();
+        }, { once: true });
+    });
+}
+
+// Animace z centrální pozice na lis (pro pasivní zařízení, pokud není production)
+function animateFlyingRequestFromCenter(targetEl, requestDetails) {
+    return new Promise(resolve => {
+        const flyingEl = document.createElement('div');
+        flyingEl.className = 'flying-request';
+        // Vylepšení obsahu létajícího elementu
+        flyingEl.innerHTML = `
+            <div style="text-align: center; font-size: 1.2em;">
+                <div style="font-weight: bold; color: #22d3ee;">${requestDetails.kontakt}</div>
+                <div style="font-size: 0.8em; color: #fbbf24;">${requestDetails.prurez}</div>
+                <div style="font-size: 0.7em; color: #a3e635;">${requestDetails.jmeno}</div>
+            </div>
+        `;
+        document.body.appendChild(flyingEl);
+
+        const targetRect = targetEl.getBoundingClientRect();
+
+        // Dynamicky nastavená šířka pro flyingEl, aby byl text vidět
+        flyingEl.style.width = '300px'; 
+        flyingEl.style.height = '120px'; /* Dostatek místa pro text */
+        flyingEl.style.whiteSpace = 'normal'; /* Aby se text zalomil */
+
+        const startX = window.innerWidth / 2 - (flyingEl.offsetWidth / 2);
+        const startY = window.innerHeight / 2 - (flyingEl.offsetHeight / 2);
+
+        flyingEl.style.left = `${startX}px`;
+        flyingEl.style.top = `${startY}px`;
+
+        flyingEl.style.transform = `scale(0)`; 
+        flyingEl.style.opacity = '0';
+
+        requestAnimationFrame(() => {
+            flyingEl.style.transform = `scale(1)`;
+            flyingEl.style.opacity = '1';
+            
+            setTimeout(() => { 
+                const targetX = targetRect.left + (targetRect.width / 2) - (flyingEl.offsetWidth / 2);
+                const targetY = targetRect.top + (targetRect.height / 2) - (flyingEl.offsetHeight / 2);
+                
+                flyingEl.style.transition = 'transform 0.8s ease-in-out, opacity 0.8s ease-in-out';
+                flyingEl.style.transform = `translate(${targetX - startX}px, ${targetY - startY}px) scale(0.5)`;
+                flyingEl.style.opacity = '0';
+            }, 500); 
+        });
+
+        flyingEl.addEventListener('transitionend', () => {
+            flyingEl.remove();
+            resolve();
+        }, { once: true });
+    });
+}
+
+// NOVÁ ANIMACE: Letí z fullscreen na lis a "sroluje se"
+function animateFlyingRequestFullscreen(targetEl, requestDetails) {
+    return new Promise(resolve => {
+        const flyingEl = document.createElement('div');
+        flyingEl.className = 'flying-request flying-request-fullscreen';
+        flyingEl.innerHTML = `
+            <div style="text-align: center;">
+                <div style="font-size: 0.8em; color: #a3e635;">NOVÝ POŽADAVEK</div>
+                <div style="font-size: 1.5em; font-weight: bold; color: #22d3ee; margin-top: 10px;">${requestDetails.kontakt}</div>
+                <div style="font-size: 1.2em; color: #fbbf24;">${requestDetails.prurez}</div>
+                <div style="font-size: 1em; color: #cbd5f5;">${requestDetails.jmeno}</div>
+            </div>
+        `;
+        document.body.appendChild(flyingEl);
+
+        const targetRect = targetEl.getBoundingClientRect();
+
+        // Fáze 1: Objeví se a zvětší na fullscreen
+        requestAnimationFrame(() => {
+            flyingEl.style.opacity = '1';
+            flyingEl.style.transform = 'scale(1)'; 
+        });
+
+        // Fáze 2 & 3: Zůstane chvíli fullscreen (nyní 5 sekund), pak se přesune a sroluje do lisu
+        setTimeout(() => {
+            // Získání aktuálních dat lisu, aby animace mohla převzít jeho aktuální barvu (po případném assigned stavu)
+            // requestDetails.targetLisIndex by mělo být definováno, viz oprava v assign funkci
+            const targetLisIndex = requestDetails.targetLisIndex !== undefined ? requestDetails.targetLisIndex : (targetEl ? parseInt(targetEl.id.replace('lis', '')) : 0);
+            const currentLisData = lisy[targetLisIndex]; 
+            const finalBackground = currentLisData && currentLisData.kontakt ? 'linear-gradient(145deg, #16653499, #1a9a4e99)' : 'linear-gradient(145deg, #020617ee, #111827ee)'; 
+
+            const finalX = targetRect.left;
+            const finalY = targetRect.top;
+            const finalWidth = targetRect.width;
+            const finalHeight = targetRect.height;
+            const finalBorderRadius = parseFloat(getComputedStyle(targetEl).borderRadius);
+            
+            // Změníme transition, aby animoval více vlastností
+            flyingEl.style.transition = 'all 0.8s ease-in-out';
+            
+            // Nastavíme cílové styly pro transformaci
+            flyingEl.style.left = `${finalX}px`;
+            flyingEl.style.top = `${finalY}px`;
+            flyingEl.style.width = `${finalWidth}px`;
+            flyingEl.style.height = `${finalHeight}px`;
+            flyingEl.style.fontSize = `1.2em`; 
+            flyingEl.style.borderRadius = `${finalBorderRadius}px`;
+            flyingEl.style.background = finalBackground; 
+            flyingEl.style.opacity = '0'; 
+            flyingEl.style.transform = 'scale(0.8)'; 
+            flyingEl.innerHTML = ''; 
+            
+        }, 5000); // Zobrazí fullscreen na 5 SEKUND
+
+        flyingEl.addEventListener('transitionend', () => {
+            flyingEl.remove();
+            resolve();
+        }, { once: true });
+    });
+}
+
+function showFullscreenPopup(text){
+  const popup=document.getElementById("fullscreenPopup");
+  popup.innerText=text;
+  popup.style.display="flex";
+  setTimeout(()=>popup.style.display="none",5000);
+}
+
+function updateHeader(){
+  const prodScreen=document.getElementById("production");
+  if(prodScreen.style.display !== "block") return;
+  let last = null;
+  lisy.forEach((l,i)=>{
+    if(l.kontakt !== "") last = `${l.kontakt} - ${l.prurez} - ${l.jmeno} → LIS ${i+1}`;
+  });
+  document.getElementById("mainHeader").innerText = last || "---";
+}
+
+function popup(text){
+  const p=document.getElementById("popup");
+  p.innerText=text;
+  p.style.display="flex";
+  setTimeout(()=>p.style.display="none",5000);
+}
+
+function tone(){
+  const ctx=new(window.AudioContext||window.webkitAudioContext)();
+  const o=ctx.createOscillator();
+  o.frequency.value=900;
+  o.connect(ctx.destination);
+  o.start();
+  o.stop(ctx.currentTime+0.25);
+}
+
+// Přidáno pro správu aktivního tlačítka v navigaci
+let currentActiveButton = null;
+function setActiveNavButton(buttonId) {
+    if (currentActiveButton) {
+        currentActiveButton.classList.remove('active-nav');
+    }
+    const newActiveButton = document.querySelector(`.nav button[onclick*="showScreen('${buttonId}')"]`);
+    if (newActiveButton) {
+        newActiveButton.classList.add('active-nav');
+        currentActiveButton = newActiveButton;
+    }
+}
+
+const mainTopbar = document.getElementById('mainTopbar'); // Získání reference na topbar
+window.showScreen=function(id){
+    document.querySelectorAll(".screen").forEach(s=>s.style.display="none");
+    document.getElementById(id).style.display="block";
+    updateHeader();
+    setActiveNavButton(id); // Nastaví aktivní stav tlačítku
+
+    // Logika pro skrytí/zobrazení topbaru
+    if (id === 'requests') {
+        mainTopbar.classList.add('hidden');
+    } else {
+        mainTopbar.classList.remove('hidden');
+    }
+}
+
+showScreen("setup"); // Nastaví Setup jako výchozí a aktivuje jeho tlačítko
+setInterval(()=>{
+  const production = document.getElementById("production");
+  if(production.style.display !== "block") return;
+  const q = production.querySelector(".queue");
+  if(!q) return;
+  q.scrollTop += 1;
+  if(q.scrollTop + q.clientHeight >= q.scrollHeight) q.scrollTop = 0;
+},100);
+
+</script>
+</body>
+</html>
