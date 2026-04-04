@@ -4,11 +4,13 @@
 <meta charset="UTF-8">
 <title>KEMMSOFT 4.0 Testing</title>
 <style>
+/* Základní styly */
 body{
-font-family:Segoe UI,Arial;
+font-family: 'Segoe UI', Arial, sans-serif; /* Moderní bezpatkový font */
 background:url("background.png") center/cover fixed;
 margin:0;
 color:white;
+overflow-x: hidden; /* Zamezí horizontálnímu scrollu kvůli animacím */
 }
 body::before{
 content:"";
@@ -26,7 +28,7 @@ padding:15px 25px;
 .logo {
     font-size: 36px;
     font-weight: bold;
-    background: linear-gradient(45deg, #22c55e); 
+    background: linear-gradient(45deg, #22c55e, #1a9a4e); /* Jemnější gradient */
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     text-shadow: 2px 2px 6px rgba(0,0,0,0.5);
@@ -39,6 +41,11 @@ border-radius:6px;
 background:#22c55e;
 color:white;
 cursor:pointer;
+transition: background 0.3s ease, transform 0.2s ease;
+}
+.nav button:hover { /* Hover pro tlačítka nav, kde myš je */
+    background: #1a9a4e;
+    transform: translateY(-2px);
 }
 .header{
 text-align:center;
@@ -46,10 +53,12 @@ font-size:68px;
 background:#111827cc;
 padding:10px;
 transition: all 0.3s ease;
+text-shadow: 2px 2px 8px rgba(0,0,0,0.7); /* Vylepšený stín */
+border-bottom: 2px solid rgba(34, 197, 94, 0.5); /* Moderní linka */
 }
 @keyframes headerBlink {
-  0%, 100% { color: #22c55e; }
-  50% { color: #ffffff; }
+  0%, 100% { color: #22c55e; text-shadow: 0 0 15px #22c55e; }
+  50% { color: #ffffff; text-shadow: none; }
 }
 .header.blink {
   animation: headerBlink 1s infinite;
@@ -71,104 +80,172 @@ display:grid;
 grid-template-columns:repeat(4,1fr);
 gap:20px;
 }
+
+/* KARTY LISŮ - VIZUÁLNÍ TUNING PRO VÝROBNÍ OBRAZOVKU */
 .card{
-background:#020617dd;
+background: linear-gradient(145deg, #020617ee, #111827ee); /* Dynamický tmavý gradient */
 padding:25px;
-border-radius:18px;
+border-radius:22px; /* Více zaoblené rohy */
 text-align:center;
-transition:.3s;
-position: relative; /* Pro správné zobrazení animačního elementu */
+transition: all .4s ease-out; /* Dlouhý a plynulý transition pro všechny stavy */
+position: relative;
+box-shadow: 0 8px 20px rgba(0,0,0,0.7), inset 0 0 10px rgba(255,255,255,0.05); /* Hluboký vnější a jemný vnitřní stín */
+border: 1px solid rgba(34, 197, 94, 0.15); /* Jemný okraj */
 }
+
+/* Stav PŘIŘAZENO (ASSIGNED) */
 .card.assigned{
-background:#22c55e90;
-color:black;
-box-shadow:0 0 20px #22c55e44;
+background: linear-gradient(145deg, #16653499, #1a9a4e99); /* Zelenější, ale stále průhledný gradient */
+color: #e0ffe0; /* Světle zelený text, aby vynikl */
+box-shadow: 0 0 30px rgba(34, 197, 94, 0.7), inset 0 0 15px rgba(34, 197, 94, 0.5); /* Zářivější zelený stín */
+border-color: #22c55e;
+animation: pulseBorder 2s infinite ease-in-out; /* Nová pulzující animace okraje */
 }
-.card.active{
-background:#22c55e;
-color:black;
-box-shadow:0 0 40px #22c55e;
-transform:scale(1.05);
+@keyframes pulseBorder {
+    0% { border-color: rgba(34, 197, 94, 0.5); box-shadow: 0 0 30px rgba(34, 197, 94, 0.7), inset 0 0 15px rgba(34, 197, 94, 0.5); }
+    50% { border-color: rgba(34, 197, 94, 0.9); box-shadow: 0 0 45px rgba(34, 197, 94, 0.9), inset 0 0 20px rgba(34, 197, 94, 0.7); }
+    100% { border-color: rgba(34, 197, 94, 0.5); box-shadow: 0 0 30px rgba(34, 197, 94, 0.7), inset 0 0 15px rgba(34, 197, 94, 0.5); }
 }
+
+/* Stav AKTIVNÍ (ACTIVE) - při novém přiřazení */
+.card.active{ 
+background: linear-gradient(145deg, #22c55e, #1a9a4e); /* Plný, jasný zelený gradient */
+color: #000; /* Text černej, maximální kontrast */
+box-shadow: 0 0 80px rgba(34, 197, 94, 0.9), 0 0 30px rgba(255,255,255,0.6); /* Super zářivá, bílý okraj */
+transform: scale(1.08); /* Trochu větší zvětšení */
+border-color: #22c55e;
+animation: cardActiveScale 1.2s forwards; /* Vlastní animace pro active stav */
+}
+@keyframes cardActiveScale {
+    0% { transform: scale(1); box-shadow: 0 8px 20px rgba(0,0,0,0.7), inset 0 0 10px rgba(255,255,255,0.05); }
+    50% { transform: scale(1.1); box-shadow: 0 0 80px rgba(34, 197, 94, 0.9), 0 0 30px rgba(255,255,255,0.6); }
+    100% { transform: scale(1.08); box-shadow: 0 0 80px rgba(34, 197, 94, 0.9), 0 0 30px rgba(255,255,255,0.6); }
+}
+
+/* LIS text */
 .lis {
-    font-size: 26px;
-    font-weight: bold;
-    background: linear-gradient(45deg, #22c55e); 
+    font-size: 34px; /* Větší text LIS */
+    font-weight: 800; /* Extra bold */
+    background: linear-gradient(45deg, #6ee7b7, #34d399); /* Jasnější zelený gradient */
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     text-shadow:
-        2px 2px 4px rgba(0,0,0,0.5),
-        4px 4px 6px rgba(0,0,0,0.4);
+        4px 4px 8px rgba(0,0,0,0.7), /* Výraznější stín */
+        8px 8px 12px rgba(0,0,0,0.6);
     transition: all 0.3s ease;
+    margin-bottom: 20px; /* Více místa */
 }
-.card:hover .lis {
-    transform: scale(1.1) rotateX(2deg) rotateY(2deg);
-    text-shadow:
-        3px 3px 5px rgba(0,0,0,0.6),
-        6px 6px 8px rgba(0,0,0,0.5);
-}
-@keyframes lisBlink {
-    0% { transform: scale(1) rotateX(0deg) rotateY(0deg); text-shadow: 2px 2px 4px rgba(0,0,0,0.5), 4px 4px 6px rgba(0,0,0,0.4); }
-    50% { transform: scale(1.2) rotateX(5deg) rotateY(5deg); text-shadow: 4px 4px 8px rgba(0,0,0,0.7), 8px 8px 10px rgba(0,0,0,0.6); }
-    100% { transform: scale(1) rotateX(0deg) rotateY(0deg); text-shadow: 2px 2px 4px rgba(0,0,0,0.5), 4px 4px 6px rgba(0,0,0,0.4); }
+/* Animace textu LIS při aktivním stavu */
+@keyframes lisTextBlink {
+    0%, 100% { transform: scale(1); opacity: 1; text-shadow: 4px 4px 8px rgba(0,0,0,0.7); }
+    50% { transform: scale(1.1); opacity: 0.9; text-shadow: 6px 6px 12px rgba(0,0,0,0.9); }
 }
 .card.active .lis {
-    animation: lisBlink 1.2s ease forwards;
+    animation: lisTextBlink 1.2s ease forwards;
 }
-.kontakt{font-size:22px;color:#22d3ee}
-.prurez{font-size:20px;color:#fbbf24}
-.jmeno{font-size:18px;color:#a3e635}
-.time{font-size:16px;color:#cbd5f5;margin-top:4px}
-.hotovo{
-margin-top:10px;
-padding:6px 14px;
+
+/* Styly pro data na kartě */
+.kontakt{font-size:26px;color:#22d3ee; margin-top: 10px; font-weight: 600;} /* Trochu větší, bold */
+.prurez{font-size:24px;color:#fbbf24; margin-top: 5px; font-weight: 600;}
+.jmeno{font-size:22px;color:#a3e635; margin-top: 5px; font-weight: 600;}
+.time{font-size:16px;color:#cbd5f5;margin-top:8px; font-weight: 400;}
+.hotovo{ /* Tlačítko HOTOVO - jen pro nastavení, tam myš je */
+margin-top:15px;
+padding:8px 18px;
 border:none;
-border-radius:6px;
+border-radius:8px;
 background:#ef4444;
 color:white;
 cursor:pointer;
+box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4);
+transition: all 0.3s ease;
 }
+.hotovo:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(239, 68, 68, 0.6);
+}
+
 .queue{
-background:#020617dd;
+background: linear-gradient(145deg, #020617ee, #111827ee); /* Stejný gradient jako karty */
 padding:20px;
-border-radius:18px;
+border-radius:22px;
 max-height:80vh;
 overflow-y:auto;
+box-shadow: 0 8px 20px rgba(0,0,0,0.7), inset 0 0 10px rgba(255,255,255,0.05);
+border: 1px solid rgba(34, 197, 94, 0.15);
 }
+.queue h3 {
+    color: #22c55e;
+    text-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+    margin-bottom: 15px;
+}
+
 .queueItem{
-padding:10px;
+padding:12px;
 border-bottom:1px solid #1e293b;
-margin-bottom:8px;
-position: relative; /* Pro správné zobrazení animačního elementu */
+margin-bottom:10px;
+position: relative;
+background: #020617aa; /* Lehce tmavší pozadí pro položky ve frontě */
+border-radius: 8px;
+box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
-.assign button{
+.queueItem:last-child {
+    border-bottom: none;
+}
+.queueItem b { color: #22d3ee; } /* Barva pro kontakt */
+.queueItem .time { color: #cbd5f5; font-size: 14px; margin-top: 4px;}
+
+.assign button{ /* Tlačítka pro přiřazení - tam myš je */
 margin:2px;
-padding:4px 8px;
+padding:6px 10px;
 border:none;
-border-radius:4px;
+border-radius:6px;
 background:#22c55e;
 color:white;
 cursor:pointer;
+transition: background 0.2s ease, transform 0.1s ease;
+}
+.assign button:hover {
+    background: #1a9a4e;
+    transform: translateY(-1px);
 }
 .assign .delete{
 background:#ef4444;
 }
+.assign .delete:hover {
+    background: #dc2626;
+}
+
 input{
 width:100%;
-padding:8px;
-margin-bottom:6px;
-border-radius:6px;
-border:none;
+padding:10px;
+margin-bottom:10px;
+border-radius:8px;
+border:1px solid #1e293b;
+background: #0f172a;
+color: white;
+box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
 }
 .addBtn{
 width:100%;
-padding:10px;
-background:#3b82f6;
+padding:12px;
+background: linear-gradient(90deg, #3b82f6, #60a5fa); /* Gradient pro Add button */
 border:none;
 border-radius:8px;
 color:white;
 cursor:pointer;
+font-size: 1.1em;
+font-weight: bold;
+box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+transition: all 0.3s ease;
 }
+.addBtn:hover { /* Hover pro Add button */
+    background: linear-gradient(90deg, #60a5fa, #3b82f6);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(59, 130, 246, 0.6);
+}
+
 .popup{
 position:fixed;
 top:0;
@@ -218,18 +295,16 @@ display:none;
     font-size: 1.2em;
     font-weight: bold;
     white-space: nowrap;
-    transition: transform 0.8s ease-in-out, opacity 0.8s ease-in-out; /* Animace transformace a průhlednosti */
     box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    opacity: 1;
     display: flex; /* Aby text byl centrovaný */
     align-items: center;
     justify-content: center;
     text-align: center;
+    transition: all 0.8s ease-in-out; /* Univerzální transition pro létající prvky */
 }
 
 /* Specific styling for fullscreen animation */
 .flying-request-fullscreen {
-    transition: all 0.8s ease-in-out; /* Pro celou obrazovku */
     font-size: 80px; /* Větší text */
     padding: 40px;
     border-radius: 20px;
@@ -424,16 +499,13 @@ window.assign=async function(lisIndex,reqIndex){
   const targetElement = document.getElementById(`lis${lisIndex}`);
 
   // Animace pro aktuální zařízení, kde dochází k přiřazení
-  // Zde zohledňujeme, jestli je aktivní production obrazovka
   if (currentScreen === "production" && targetElement) {
-      // Pokud jsme na production obrazovce a přiřazujeme, animujeme přímo fullscreen
       await animateFlyingRequestFullscreen(targetElement, p);
   } else {
-      // Jinak, pokud je sourceElement dostupný, animujeme z něj (pro setup/requests)
       const sourceElement = document.getElementById(`request-${p.key}`);
       if (sourceElement && targetElement) {
           await animateFlyingRequest(sourceElement, targetElement, p);
-      } else if (targetElement) { // Fallback pro případ, že zdrojový element není k dispozici (např. stránka nebyla reloadnuta)
+      } else if (targetElement) {
           await animateFlyingRequestFromCenter(targetElement, p);
       }
   }
@@ -585,7 +657,14 @@ function animateFlyingRequestFullscreen(targetEl, requestDetails) {
     return new Promise(resolve => {
         const flyingEl = document.createElement('div');
         flyingEl.className = 'flying-request flying-request-fullscreen';
-        flyingEl.innerText = `${requestDetails.kontakt} - ${requestDetails.prurez} - ${requestDetails.jmeno}`;
+        flyingEl.innerHTML = `
+            <div style="text-align: center;">
+                <div style="font-size: 0.8em; color: #a3e635;">NOVÝ POŽADAVEK</div>
+                <div style="font-size: 1.5em; font-weight: bold; color: #22d3ee; margin-top: 10px;">${requestDetails.kontakt}</div>
+                <div style="font-size: 1.2em; color: #fbbf24;">${requestDetails.prurez}</div>
+                <div style="font-size: 1em; color: #cbd5f5;">${requestDetails.jmeno}</div>
+            </div>
+        `;
         document.body.appendChild(flyingEl);
 
         const targetRect = targetEl.getBoundingClientRect();
@@ -598,15 +677,15 @@ function animateFlyingRequestFullscreen(targetEl, requestDetails) {
 
         // Fáze 2 & 3: Zůstane chvíli fullscreen, pak se přesune a sroluje do lisu
         setTimeout(() => {
-            // Cílové rozměry a pozice pro "srolování"
+            const currentLisData = lisy[requestDetails.targetLisIndex]; // Získání dat lisu, aby animace mohla převzít jeho barvu
+            const finalBackground = currentLisData.kontakt ? 'linear-gradient(145deg, #16653499, #1a9a4e99)' : 'linear-gradient(145deg, #020617ee, #111827ee)'; // Barva lisu po přiřazení nebo defaultní
+
             const finalX = targetRect.left;
             const finalY = targetRect.top;
             const finalWidth = targetRect.width;
             const finalHeight = targetRect.height;
-            const finalFontSize = parseFloat(getComputedStyle(targetEl.querySelector('.kontakt')).fontSize);
             const finalBorderRadius = parseFloat(getComputedStyle(targetEl).borderRadius);
-            const finalBackground = getComputedStyle(targetEl).backgroundColor;
-
+            
             // Změníme transition, aby animoval více vlastností
             flyingEl.style.transition = 'all 0.8s ease-in-out';
             
@@ -615,12 +694,12 @@ function animateFlyingRequestFullscreen(targetEl, requestDetails) {
             flyingEl.style.top = `${finalY}px`;
             flyingEl.style.width = `${finalWidth}px`;
             flyingEl.style.height = `${finalHeight}px`;
-            flyingEl.style.fontSize = `${finalFontSize}px`;
+            flyingEl.style.fontSize = `1.2em`; /* Zmenšíme na velikost textu na kartě */
             flyingEl.style.borderRadius = `${finalBorderRadius}px`;
-            flyingEl.style.background = finalBackground; /* Přechod na barvu lisu */
-            flyingEl.style.opacity = '0'; /* Pomalu mizí */
-            flyingEl.style.transform = 'scale(0.8)'; /* Zmenší se k velikosti lisu */
-            flyingEl.innerText = ''; // Vymažeme text, jakmile se sroluje
+            flyingEl.style.background = finalBackground; 
+            flyingEl.style.opacity = '0'; 
+            flyingEl.style.transform = 'scale(0.8)'; 
+            flyingEl.innerHTML = ''; // Vymažeme text, jakmile se sroluje
             
         }, 1500); // Zobrazí fullscreen na 1.5 sekundy
 
