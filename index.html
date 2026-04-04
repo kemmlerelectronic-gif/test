@@ -271,6 +271,7 @@ display:none;
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getDatabase, ref, push, set, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+    let audioCtx = null;
 
 const firebaseConfig={
 apiKey:"AIzaSyAhiCfh-Di_NdPO5rGM7CZFQGaSymcdWxI",
@@ -436,13 +437,14 @@ function popup(text){
 }
 
 function tone(){
-let audioCtx = null;
-  const ctx=new(window.AudioContext||window.webkitAudioContext)();
-  const o=ctx.createOscillator();
-  o.frequency.value=900;
-  o.connect(ctx.destination);
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  const o = audioCtx.createOscillator();
+  o.frequency.value = 900;
+  o.connect(audioCtx.destination);
   o.start();
-  o.stop(ctx.currentTime+0.25);
+  o.stop(audioCtx.currentTime + 0.25);
 }
 
 window.showScreen=function(id){
