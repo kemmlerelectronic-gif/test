@@ -547,6 +547,7 @@ const db=getDatabase(app);
 const LIS_COUNT=7;
 let lisy=[];
 let pozadavky=[];
+let lastLisy = []; // Nová proměnná pro ukládání předchozího stavu lisy
 let lastPozadavky = []; // Nová proměnná pro ukládání předchozího stavu požadavků
 
 function emptyLis(){ return {kontakt:"",prurez:"",jmeno:"",time:""} }
@@ -569,13 +570,14 @@ onValue(ref(db,'lisy'),snap=>{
     if (lis.assignedAnimation && lis.assignedAnimation.targetLisIndex === i) {
         const targetElement = document.getElementById(`lis${i}`);
         if (targetElement) {
-            if (currentScreen === "production") { // Speciální animace pro Výrobní obrazovku
-                await animateFlyingRequestFullscreen(targetElement, lis.assignedAnimation.requestDetails);
-            } else { // Standardní animace pro ostatní obrazovky (setup, requests)
-                await animateFlyingRequestFromCenter(targetElement, lis.assignedAnimation.requestDetails);
+            // Použijeme data z Firebase pro requestDetails
+            const reqDetails = lis.assignedAnimation.requestDetails;
+            if (currentScreen === "production") {
+                await animateFlyingRequestFullscreen(targetElement, reqDetails);
+            } else {
+                await animateFlyingRequestFromCenter(targetElement, reqDetails);
             }
             // Po dokončení animace odstraníme data pro animaci z Firebase
-            // Použijeme update s null, aby se odstranil pouze assignedAnimation property
             update(ref(db, `lisy/${i}`), { assignedAnimation: null });
         }
     }
@@ -746,7 +748,7 @@ function blink(p,i,assigned=false){
 
   const currentScreen=document.querySelector(".screen:not([style*='display: none'])")?.id;
   if(currentScreen==="production"){ 
-    showFullscreenPopup(`${p.kontakt} - ${p.prurez} - ${p.jmeno} → LIS ${i+1}`);
+    // showFullscreenPopup(`${p.kontakt} - ${p.prurez} - ${p.jmeno} → LIS ${i+1}`); // Toto nyní řeší animateFlyingRequestFullscreen
   }
 
   tone();
@@ -870,8 +872,11 @@ function animateFlyingRequestFullscreen(targetEl, requestDetails) {
 
         // Fáze 2 & 3: Zůstane chvíli fullscreen (nyní 5 sekund), pak se přesune a sroluje do lisu
         setTimeout(() => {
-            const currentLisData = lisy[requestDetails.targetLisIndex]; 
-            const finalBackground = currentLisData.kontakt ? 'linear-gradient(145deg, #16653499, #1a9a4e99)' : 'linear-gradient(145deg, #020617ee, #111827ee)'; 
+            // Získání aktuálních dat lisu, aby animace mohla převzít jeho aktuální barvu (po případném assigned stavu)
+            // requestDetails.targetLisIndex musí být definováno, což je v tomto kontextu zaručeno
+            const targetLisIndex = requestDetails.targetLisIndex !== undefined ? requestDetails.targetLisIndex : (targetEl ? parseInt(targetEl.id.replace('lis', '')) : 0);
+            const currentLisData = lisy[targetLisIndex]; 
+            const finalBackground = currentLisData && currentLisData.kontakt ? 'linear-gradient(145deg, #16653499, #1a9a4e99)' : 'linear-gradient(145deg, #020617ee, #111827ee)'; 
 
             const finalX = targetRect.left;
             const finalY = targetRect.top;
