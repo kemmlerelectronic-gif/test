@@ -221,6 +221,10 @@ display:none;
     transition: transform 0.8s ease-in-out, opacity 0.8s ease-in-out; /* Animace transformace a průhlednosti */
     box-shadow: 0 5px 15px rgba(0,0,0,0.5);
     opacity: 1;
+    display: flex; /* Aby text byl centrovaný */
+    align-items: center;
+    justify-content: center;
+    transform: scale(0); /* Začínáme z malého bodu */
 }
 
 </style>
@@ -288,7 +292,7 @@ display:none;
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-import { getDatabase, ref, push, set, onValue, remove } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+import { getDatabase, ref, push, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
 
 const firebaseConfig={
 apiKey:"AIzaSyAhiCfh-Di_NdPO5rGM7CZFQGaSymcdWxI",
@@ -312,10 +316,24 @@ onValue(ref(db,'lisy'),snap=>{
   const data=snap.val();
   const currentLisy = data ? Object.values(data) : Array.from({length:LIS_COUNT},()=>emptyLis());
   
-  currentLisy.forEach((lis, i) => {
+  currentLisy.forEach(async (lis, i) => { // Použijeme async pro await v animaci
     const oldLis = lastLisy[i];
+
+    // Detekce nového přiřazení (pokud lis.kontakt existuje a buď dříve neexistoval, nebo se změnil)
     if (lis.kontakt && (!oldLis || oldLis.kontakt !== lis.kontakt)) {
       blink(lis, i, true); 
+    }
+
+    // NOVINKA: Spuštění "létající" animace na pasivních zařízeních
+    // Detekujeme, zda byl lis právě aktualizován s daty pro animaci
+    if (lis.assignedAnimation && lis.assignedAnimation.targetLisIndex === i) {
+        // Spustíme animaci z centrální pozice k tomuto lisu
+        const targetElement = document.getElementById(`lis${i}`);
+        if (targetElement) {
+            await animateFlyingRequestFromCenter(targetElement, lis.assignedAnimation.requestDetails);
+            // Po dokončení animace odstraníme data pro animaci z Firebase
+            update(ref(db, `lisy/${i}`), { assignedAnimation: null });
+        }
     }
   });
 
@@ -384,7 +402,7 @@ window.assign=async function(lisIndex,reqIndex){
   const p=pozadavky[reqIndex];
   if (!p) return;
 
-  // Spustíme animaci PŘED odstraněním z Firebase
+  // Spustíme animaci pro aktuální zařízení
   const sourceElement = document.getElementById(`request-${p.key}`);
   const targetElement = document.getElementById(`lis${lisIndex}`);
 
@@ -392,13 +410,20 @@ window.assign=async function(lisIndex,reqIndex){
     await animateFlyingRequest(sourceElement, targetElement, p);
   }
 
-  // Teprve POTÉ aktualizujeme Firebase
+  // Aktualizujeme Firebase pro lis
+  // PŘIDÁNO: assignedAnimation objekt pro spuštění animace na jiných zařízeních
   set(ref(db,`lisy/${lisIndex}`),{
     kontakt:p.kontakt,
     prurez:p.prurez,
     jmeno:p.jmeno,
-    time:timeNow()
+    time:timeNow(),
+    assignedAnimation: { // Nový objekt pro data animace
+      targetLisIndex: lisIndex,
+      requestDetails: { kontakt: p.kontakt, prurez: p.prurez, jmeno: p.jmeno }
+    }
   });
+  
+  // Odstraníme požadavek z fronty
   remove(ref(db,'pozadavky/'+p.key));
 }
 
@@ -454,7 +479,7 @@ function blink(p,i,assigned=false){
   tone();
 }
 
-// NOVÁ FUNKCE PRO LÉTAJÍCÍ ANIMACI
+// Původní animace z fronty na lis (pro zařízení, kde došlo k akci assign)
 function animateFlyingRequest(sourceEl, targetEl, requestData) {
     return new Promise(resolve => {
         const flyingEl = document.createElement('div');
@@ -465,28 +490,73 @@ function animateFlyingRequest(sourceEl, targetEl, requestData) {
         const sourceRect = sourceEl.getBoundingClientRect();
         const targetRect = targetEl.getBoundingClientRect();
 
-        // Nastavení počáteční pozice
         flyingEl.style.left = `${sourceRect.left}px`;
         flyingEl.style.top = `${sourceRect.top}px`;
-        flyingEl.style.width = `${sourceRect.width}px`; // Zachováme šířku
-        flyingEl.style.height = `${sourceRect.height}px`; // Zachováme výšku
-        flyingEl.style.display = 'flex'; // Aby text byl centrovaný
+        flyingEl.style.width = `${sourceRect.width}px`; 
+        flyingEl.style.height = `${sourceRect.height}px`; 
+        
+        // Změna: začíná z plné velikosti a na své pozici
+        flyingEl.style.transform = `translate(0, 0) scale(1)`; 
+        flyingEl.style.opacity = '1';
 
-        // Pozice cíle - střed cílového elementu
-        const targetX = targetRect.left + (targetRect.width / 2) - (sourceRect.width / 2); // Cílem je střed karty, ne její levý horní roh
-        const targetY = targetRect.top + (targetRect.height / 2) - (sourceRect.height / 2); // Cílem je střed karty
+        const targetX = targetRect.left + (targetRect.width / 2) - (sourceRect.width / 2);
+        const targetY = targetRect.top + (targetRect.height / 2) - (sourceRect.height / 2);
 
-        // Spustíme animaci po krátké prodlevě (aby se vykreslil na startovní pozici)
         requestAnimationFrame(() => {
-            flyingEl.style.transform = `translate(${targetX - sourceRect.left}px, ${targetY - sourceRect.top}px) scale(0.5)`; // Letí na střed cíle a zmenší se
-            flyingEl.style.opacity = '0'; // Postupně zmizí
+            // Cílová transformace
+            flyingEl.style.transform = `translate(${targetX - sourceRect.left}px, ${targetY - sourceRect.top}px) scale(0.5)`;
+            flyingEl.style.opacity = '0';
         });
 
-        // Po dokončení animace element odstraníme
         flyingEl.addEventListener('transitionend', () => {
             flyingEl.remove();
             resolve();
-        }, { once: true }); // Zajistí, že event listener se spustí jen jednou
+        }, { once: true });
+    });
+}
+
+// NOVÁ animace z centrální pozice na lis (pro pasivní zařízení)
+function animateFlyingRequestFromCenter(targetEl, requestDetails) {
+    return new Promise(resolve => {
+        const flyingEl = document.createElement('div');
+        flyingEl.className = 'flying-request';
+        flyingEl.innerText = `${requestDetails.kontakt} - ${requestDetails.prurez} - ${requestDetails.jmeno}`;
+        document.body.appendChild(flyingEl);
+
+        const targetRect = targetEl.getBoundingClientRect();
+
+        // Střed obrazovky jako startovní bod pro pasivní zařízení
+        const startX = window.innerWidth / 2 - (flyingEl.offsetWidth / 2);
+        const startY = window.innerHeight / 2 - (flyingEl.offsetHeight / 2);
+
+        flyingEl.style.left = `${startX}px`;
+        flyingEl.style.top = `${startY}px`;
+        // flyingEl.style.width = '200px'; // Můžete nastavit pevnou šířku/výšku
+        // flyingEl.style.height = '60px'; // nebo nechat na obsahu
+
+        // Začínáme z malého bodu uprostřed
+        flyingEl.style.transform = `scale(0)`; 
+        flyingEl.style.opacity = '0';
+
+        requestAnimationFrame(() => {
+            // Zvětší se na normální velikost uprostřed a pak letí
+            flyingEl.style.transform = `scale(1)`;
+            flyingEl.style.opacity = '1';
+            
+            setTimeout(() => { // Dáme animaci chvilku, aby se projevilo zvětšení uprostřed
+                const targetX = targetRect.left + (targetRect.width / 2) - (flyingEl.offsetWidth / 2);
+                const targetY = targetRect.top + (targetRect.height / 2) - (flyingEl.offsetHeight / 2);
+                
+                flyingEl.style.transition = 'transform 0.8s ease-in-out, opacity 0.8s ease-in-out'; // Reset transition pro druhou fázi
+                flyingEl.style.transform = `translate(${targetX - startX}px, ${targetY - startY}px) scale(0.5)`; // Cíl
+                flyingEl.style.opacity = '0';
+            }, 500); // Počkejme půl sekundy po objevení se, než začne letět
+        });
+
+        flyingEl.addEventListener('transitionend', () => {
+            flyingEl.remove();
+            resolve();
+        }, { once: true });
     });
 }
 
