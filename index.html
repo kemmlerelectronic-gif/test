@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
 <meta charset="UTF-8">
-<title>KEMMSOFT 4.0.1 Testing</title>
+<title>KEMMSOFT 4.0 Testing</title>
 <style>
 /* Základní styly */
 body{
@@ -473,7 +473,7 @@ display:none;
 <body>
 
 <div class="topbar" id="mainTopbar">
-<div class="logo">KEMMSOFT 4.0 Testing</div>
+<div class="logo">KEMMSOFT 4.0.1 Testing</div>
 <div class="nav">
 <button onclick="showScreen('setup')">Nastavení</button>
 <button onclick="showScreen('production')">Výrobní obrazovka</button>
@@ -546,9 +546,10 @@ const db=getDatabase(app);
 
 const LIS_COUNT=7;
 let lisy=[];
-let pozadavky=[];
-let lastLisy = []; // Nová proměnná pro ukládání předchozího stavu lisy
-let lastPozadavky = []; // Nová proměnná pro ukládání předchozího stavu požadavků
+let pozadavky = [];
+let lastLisy = [];
+//lastPozadavky už nepotřebujeme, protože renderQueue teď spravuje DOM dynamicky
+//let lastPozadavky = []; 
 
 function emptyLis(){ return {kontakt:"",prurez:"",jmeno:"",time:""} }
 function timeNow(){ return new Date().toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'}) }
@@ -557,37 +558,32 @@ onValue(ref(db,'lisy'),snap=>{
   const data=snap.val();
   const currentLisy = data ? Object.values(data) : Array.from({length:LIS_COUNT},()=>emptyLis());
   
-  currentLisy.forEach(async (lis, i) => { // Použijeme async pro await v animaci
+  currentLisy.forEach(async (lis, i) => { 
     const oldLis = lastLisy[i];
     const currentScreen = document.querySelector(".screen:not([style*='display: none'])")?.id;
 
-    // Detekce nového přiřazení (pokud lis.kontakt existuje a buď dříve neexistoval, nebo se změnil)
     if (lis.kontakt && (!oldLis || oldLis.kontakt !== lis.kontakt)) {
-      // Spustíme blink pro kartu a header
       blink(lis, i, true); 
     }
 
-    // Spuštění "létající" animace na pasivních zařízeních
     if (lis.assignedAnimation && lis.assignedAnimation.targetLisIndex === i) {
         const targetElement = document.getElementById(`lis${i}`);
         if (targetElement) {
             const reqDetails = lis.assignedAnimation.requestDetails;
             if (currentScreen === "production") {
                 await animateFlyingRequestFullscreen(targetElement, reqDetails);
-            } else { // Standardní animace pro ostatní obrazovky (setup, requests)
+            } else { 
                 await animateFlyingRequestFromCenter(targetElement, reqDetails);
             }
-            // Po dokončení animace odstraníme data pro animaci z Firebase
             update(ref(db, `lisy/${i}`), { assignedAnimation: null });
         }
     }
   });
 
   lisy = currentLisy;
-  // Zajistíme, aby lisy měly vždy správný počet a pokud chybí, vyplníme prázdnými
   while(lisy.length < LIS_COUNT) lisy.push(emptyLis());
   
-  lastLisy = JSON.parse(JSON.stringify(lisy)); // Aktualizujeme lastLisy pro další porovnání
+  lastLisy = JSON.parse(JSON.stringify(lisy));
 
   renderAll();
   updateHeader();
@@ -595,31 +591,9 @@ onValue(ref(db,'lisy'),snap=>{
 
 onValue(ref(db,'pozadavky'),snap=>{
   const data=snap.val();
-  const currentPozadavky = data ? Object.entries(data).map(([k,v])=>({...v,key:k})) : [];
-
-  const currentScreen = document.querySelector(".screen:not([style*='display: none'])")?.id;
-  // Animace pulzování nového požadavku pro "setup" a "production" obrazovky
-  if (currentScreen === "setup" || currentScreen === "production") {
-      currentPozadavky.forEach(p => {
-          // Zkontrolujeme, zda požadavek s tímto klíčem neexistoval v předchozím stavu
-          if (!lastPozadavky.some(lp => lp.key === p.key)) {
-              setTimeout(() => {
-                  const newRequestEl = document.getElementById(`request-${p.key}`);
-                  if (newRequestEl) {
-                      newRequestEl.classList.add('new-request-pulse');
-                      setTimeout(() => {
-                          newRequestEl.classList.remove('new-request-pulse');
-                      }, 4000); // Animace trvá 4s
-                  }
-              }, 100); // Krátká prodleva pro vykreslení elementu
-          }
-      });
-  }
-
-  pozadavky = currentPozadavky;
-  lastPozadavky = JSON.parse(JSON.stringify(currentPozadavky));
+  pozadavky = data ? Object.entries(data).map(([k,v])=>({...v,key:k})) : [];
   
-  renderAll();
+  renderAll(); // renderAll nyní volá novou dynamickou renderQueue
 });
 
 function renderAll(){
@@ -633,7 +607,7 @@ function renderLisy(topID,bottomID,setup){
   const top=document.getElementById(topID);
   const bottom=document.getElementById(bottomID);
   top.innerHTML=""; bottom.innerHTML="";
-  for(let i=0;i<LIS_COUNT;i++){ // Použijeme LIS_COUNT
+  for(let i=0;i<LIS_COUNT;i++){ 
     const d = lisy[i] || emptyLis();
     const assigned = d.kontakt!=="";
     const html = `
@@ -651,25 +625,77 @@ function renderLisy(topID,bottomID,setup){
   }
 }
 
+// ZMĚNĚNÁ FUNKCE renderQueue
 function renderQueue(id,setup){
-  const q=document.getElementById(id);
-  q.innerHTML="";
-  pozadavky.forEach((p,i)=>{
-    q.innerHTML+=`
-      <div class="queueItem" id="request-${p.key}">
-        <b>${p.kontakt}</b> - ${p.prurez} - ${p.jmeno}
-        <div class="time">${p.time}</div>
-        ${setup?`
-        <div class="assign">
-          ${[0,1,2,3,4,5,6].map(l=>`<button onclick="assign(${l},${i})">L${l+1}</button>`).join('')}
-          <button class="delete" onclick="deleteReq('${p.key}')">X</button>
-        </div>`:""}
-      </div>`;
-  });
+  const queueElement = document.getElementById(id);
+  const currentScreen = document.querySelector(".screen:not([style*='display: none'])")?.id;
+
+  // Získání aktuálních klíčů požadavků z DOMu
+  const existingRequestElements = Array.from(queueElement.children);
+  const existingRequestKeys = new Set(existingRequestElements.map(el => el.id.replace('request-', '')));
+
+  // Projdeme aktuální požadavky z Firebase
+  let index = 0;
+  for (const p of pozadavky) {
+    const requestKey = p.key;
+    let requestEl = document.getElementById(`request-${requestKey}`);
+
+    // Pokud element neexistuje, vytvoříme ho
+    if (!requestEl) {
+      requestEl = document.createElement('div');
+      requestEl.className = 'queueItem';
+      requestEl.id = `request-${requestKey}`;
+      // Vložíme na správné místo
+      if (index < queueElement.children.length) {
+        queueElement.insertBefore(requestEl, queueElement.children[index]);
+      } else {
+        queueElement.appendChild(requestEl);
+      }
+      
+      // Spustíme animaci pouze pro nově přidaný prvek a na správných obrazovkách
+      if ((currentScreen === "setup" || currentScreen === "production")) {
+          setTimeout(() => { // Krátká prodleva pro vykreslení elementu v DOMu
+              if (requestEl && !requestEl.classList.contains('new-request-pulse')) {
+                  requestEl.classList.add('new-request-pulse');
+                  requestEl.addEventListener('animationend', function handler() {
+                      requestEl.classList.remove('new-request-pulse');
+                      requestEl.removeEventListener('animationend', handler);
+                  }, { once: true }); // Použijeme { once: true }, aby se handler spustil jen jednou
+              }
+          }, 50); // Mírně zkrácená prodleva
+      }
+    } else {
+        // Pokud element existuje, jen ho přesuneme na správnou pozici, pokud je potřeba
+        if (queueElement.children[index] !== requestEl) {
+            queueElement.insertBefore(requestEl, queueElement.children[index]);
+        }
+        existingRequestKeys.delete(requestKey); // Označíme, že tento prvek byl zpracován
+    }
+
+    // Aktualizujeme obsah elementu
+    requestEl.innerHTML = `
+      <b>${p.kontakt}</b> - ${p.prurez} - ${p.jmeno}
+      <div class="time">${p.time}</div>
+      ${setup?`
+      <div class="assign">
+        ${[0,1,2,3,4,5,6].map(l=>`<button onclick="assign(${l},'${requestKey}')">L${l+1}</button>`).join('')}
+        <button class="delete" onclick="deleteReq('${requestKey}')">X</button>
+      </div>`:""}
+    `;
+    index++;
+  }
+
+  // Odebereme prvky, které už v Firebase nejsou
+  for (const keyToRemove of existingRequestKeys) {
+    const elToRemove = document.getElementById(`request-${keyToRemove}`);
+    if (elToRemove) {
+      elToRemove.remove();
+    }
+  }
 }
 
-window.assign=async function(lisIndex,reqIndex){
-  const p=pozadavky[reqIndex];
+window.assign=async function(lisIndex,requestKey){ // requestKey místo reqIndex
+  const p = pozadavky.find(req => req.key === requestKey); // Najdeme požadavek podle klíče
   if (!p) return;
 
   const currentScreen = document.querySelector(".screen:not([style*='display: none'])")?.id;
@@ -679,10 +705,10 @@ window.assign=async function(lisIndex,reqIndex){
   if (currentScreen === "production" && targetElement) {
       await animateFlyingRequestFullscreen(targetElement, p);
   } else {
-      const sourceElement = document.getElementById(`request-${p.key}`);
+      const sourceElement = document.getElementById(`request-${p.key}`); // Zdrojový element ve frontě
       if (sourceElement && targetElement) {
           await animateFlyingRequest(sourceElement, targetElement, p);
-      } else if (targetElement) { // Pokud není sourceElement, ale je targetElement (např. při pasivní změně)
+      } else if (targetElement) { 
           await animateFlyingRequestFromCenter(targetElement, p);
       }
   }
@@ -693,9 +719,9 @@ window.assign=async function(lisIndex,reqIndex){
     prurez:p.prurez,
     jmeno:p.jmeno,
     time:timeNow(),
-    assignedAnimation: { // Nový objekt pro data animace - důležité pro pasivní zařízení
+    assignedAnimation: { 
       targetLisIndex: lisIndex,
-      requestDetails: { kontakt: p.kontakt, prurez: p.prurez, jmeno: p.jmeno, targetLisIndex: lisIndex } // Předáme i targetLisIndex
+      requestDetails: { kontakt: p.kontakt, prurez: p.prurez, jmeno: p.jmeno, targetLisIndex: lisIndex }
     }
   });
   
@@ -713,7 +739,7 @@ window.addRequest=function(){
   const kontakt=document.getElementById("kontakt").value;
   const prurez=document.getElementById("prurez").value;
   const jmeno=document.getElementById("jmeno").value;
-  if (!kontakt || !prurez || !jmeno) { // Jednoduchá validace
+  if (!kontakt || !prurez || !jmeno) { 
       alert("Prosím vyplňte všechna pole!");
       return;
   }
@@ -728,7 +754,7 @@ window.addRequestSetup=function(){
   const kontakt=document.getElementById("setupKontakt").value;
   const prurez=document.getElementById("setupPrurez").value;
   const jmeno=document.getElementById("setupJmeno").value;
-    if (!kontakt || !prurez || !jmeno) { // Jednoduchá validace
+    if (!kontakt || !prurez || !jmeno) { 
       alert("Prosím vyplňte všechna pole!");
       return;
   }
@@ -744,9 +770,8 @@ function blink(p,i,assigned=false){
   if(card){
     card.classList.add("active");
     if(assigned) card.classList.add("assigned");
-    // Opraveno: removed ?. from classList.remove
     setTimeout(()=>{
-        if (card) { // Zkontrolujeme, zda karta stále existuje (např. pokud se stránka nepřenačte)
+        if (card) { 
             card.classList.remove("active");
             if(assigned) card.classList.add("assigned");
         }
@@ -756,19 +781,15 @@ function blink(p,i,assigned=false){
   const header=document.getElementById("mainHeader");
   header.innerText=`${p.kontakt} - ${p.prurez} - ${p.jmeno} → LIS ${i+1}`;
   header.classList.add("blink");
-  setTimeout(()=>header.classList.remove("blink"),10000); /* 10 sekund blikání */
+  setTimeout(()=>header.classList.remove("blink"),10000); 
 
-  // showFullscreenPopup se už nepoužívá, nahrazuje ji animateFlyingRequestFullscreen
-  // Zvuk se přehraje automaticky při každém přiřazení
   tone();
 }
 
-// Původní animace z fronty na lis (pro zařízení, kde došlo k akci assign a není to production)
 function animateFlyingRequest(sourceEl, targetEl, requestData) {
     return new Promise(resolve => {
         const flyingEl = document.createElement('div');
         flyingEl.className = 'flying-request';
-        // Vylepšení obsahu létajícího elementu
         flyingEl.innerHTML = `
             <div style="text-align: center; font-size: 1.2em;">
                 <div style="font-weight: bold; color: #22d3ee;">${requestData.kontakt}</div>
@@ -804,12 +825,10 @@ function animateFlyingRequest(sourceEl, targetEl, requestData) {
     });
 }
 
-// Animace z centrální pozice na lis (pro pasivní zařízení, pokud není production)
 function animateFlyingRequestFromCenter(targetEl, requestDetails) {
     return new Promise(resolve => {
         const flyingEl = document.createElement('div');
         flyingEl.className = 'flying-request';
-        // Vylepšení obsahu létajícího elementu
         flyingEl.innerHTML = `
             <div style="text-align: center; font-size: 1.2em;">
                 <div style="font-weight: bold; color: #22d3ee;">${requestDetails.kontakt}</div>
@@ -821,10 +840,9 @@ function animateFlyingRequestFromCenter(targetEl, requestDetails) {
 
         const targetRect = targetEl.getBoundingClientRect();
 
-        // Dynamicky nastavená šířka pro flyingEl, aby byl text vidět
         flyingEl.style.width = '300px'; 
-        flyingEl.style.height = '120px'; /* Dostatek místa pro text */
-        flyingEl.style.whiteSpace = 'normal'; /* Aby se text zalomil */
+        flyingEl.style.height = '120px'; 
+        flyingEl.style.whiteSpace = 'normal'; 
 
         const startX = window.innerWidth / 2 - (flyingEl.offsetWidth / 2);
         const startY = window.innerHeight / 2 - (flyingEl.offsetHeight / 2);
@@ -856,7 +874,6 @@ function animateFlyingRequestFromCenter(targetEl, requestDetails) {
     });
 }
 
-// NOVÁ ANIMACE: Letí z fullscreen na lis a "sroluje se"
 function animateFlyingRequestFullscreen(targetEl, requestDetails) {
     return new Promise(resolve => {
         const flyingEl = document.createElement('div');
@@ -873,16 +890,12 @@ function animateFlyingRequestFullscreen(targetEl, requestDetails) {
 
         const targetRect = targetEl.getBoundingClientRect();
 
-        // Fáze 1: Objeví se a zvětší na fullscreen
         requestAnimationFrame(() => {
             flyingEl.style.opacity = '1';
             flyingEl.style.transform = 'scale(1)'; 
         });
 
-        // Fáze 2 & 3: Zůstane chvíli fullscreen (nyní 5 sekund), pak se přesune a sroluje do lisu
         setTimeout(() => {
-            // Získání aktuálních dat lisu, aby animace mohla převzít jeho aktuální barvu (po případném assigned stavu)
-            // requestDetails.targetLisIndex by mělo být definováno, viz oprava v assign funkci
             const targetLisIndex = requestDetails.targetLisIndex !== undefined ? requestDetails.targetLisIndex : (targetEl ? parseInt(targetEl.id.replace('lis', '')) : 0);
             const currentLisData = lisy[targetLisIndex]; 
             const finalBackground = currentLisData && currentLisData.kontakt ? 'linear-gradient(145deg, #16653499, #1a9a4e99)' : 'linear-gradient(145deg, #020617ee, #111827ee)'; 
@@ -893,10 +906,8 @@ function animateFlyingRequestFullscreen(targetEl, requestDetails) {
             const finalHeight = targetRect.height;
             const finalBorderRadius = parseFloat(getComputedStyle(targetEl).borderRadius);
             
-            // Změníme transition, aby animoval více vlastností
             flyingEl.style.transition = 'all 0.8s ease-in-out';
             
-            // Nastavíme cílové styly pro transformaci
             flyingEl.style.left = `${finalX}px`;
             flyingEl.style.top = `${finalY}px`;
             flyingEl.style.width = `${finalWidth}px`;
@@ -908,7 +919,7 @@ function animateFlyingRequestFullscreen(targetEl, requestDetails) {
             flyingEl.style.transform = 'scale(0.8)'; 
             flyingEl.innerHTML = ''; 
             
-        }, 5000); // Zobrazí fullscreen na 5 SEKUND
+        }, 5000); 
 
         flyingEl.addEventListener('transitionend', () => {
             flyingEl.remove();
@@ -950,7 +961,6 @@ function tone(){
   o.stop(ctx.currentTime+0.25);
 }
 
-// Přidáno pro správu aktivního tlačítka v navigaci
 let currentActiveButton = null;
 function setActiveNavButton(buttonId) {
     if (currentActiveButton) {
@@ -963,14 +973,13 @@ function setActiveNavButton(buttonId) {
     }
 }
 
-const mainTopbar = document.getElementById('mainTopbar'); // Získání reference na topbar
+const mainTopbar = document.getElementById('mainTopbar'); 
 window.showScreen=function(id){
     document.querySelectorAll(".screen").forEach(s=>s.style.display="none");
     document.getElementById(id).style.display="block";
     updateHeader();
-    setActiveNavButton(id); // Nastaví aktivní stav tlačítku
+    setActiveNavButton(id); 
 
-    // Logika pro skrytí/zobrazení topbaru
     if (id === 'requests') {
         mainTopbar.classList.add('hidden');
     } else {
@@ -978,7 +987,7 @@ window.showScreen=function(id){
     }
 }
 
-showScreen("setup"); // Nastaví Setup jako výchozí a aktivuje jeho tlačítko
+showScreen("setup"); 
 setInterval(()=>{
   const production = document.getElementById("production");
   if(production.style.display !== "block") return;
