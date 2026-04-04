@@ -580,11 +580,11 @@ function animateFlyingRequestFromCenter(targetEl, requestDetails) {
     });
 }
 
-// NOVÁ ANIMACE: Letí z fullscreen na lis (pro production obrazovku)
+// NOVÁ ANIMACE: Letí z fullscreen na lis a "sroluje se"
 function animateFlyingRequestFullscreen(targetEl, requestDetails) {
     return new Promise(resolve => {
         const flyingEl = document.createElement('div');
-        flyingEl.className = 'flying-request flying-request-fullscreen'; /* Přidáme fullscreen třídu */
+        flyingEl.className = 'flying-request flying-request-fullscreen';
         flyingEl.innerText = `${requestDetails.kontakt} - ${requestDetails.prurez} - ${requestDetails.jmeno}`;
         document.body.appendChild(flyingEl);
 
@@ -593,18 +593,35 @@ function animateFlyingRequestFullscreen(targetEl, requestDetails) {
         // Fáze 1: Objeví se a zvětší na fullscreen
         requestAnimationFrame(() => {
             flyingEl.style.opacity = '1';
-            flyingEl.style.transform = 'scale(1)'; /* Zvětší na celou obrazovku */
+            flyingEl.style.transform = 'scale(1)'; 
         });
 
-        // Fáze 2: Zůstane chvíli na fullscreen, pak se zmenší a letí
+        // Fáze 2 & 3: Zůstane chvíli fullscreen, pak se přesune a sroluje do lisu
         setTimeout(() => {
-            const targetX = targetRect.left + (targetRect.width / 2) - (flyingEl.offsetWidth / 2);
-            const targetY = targetRect.top + (targetRect.height / 2) - (flyingEl.offsetHeight / 2);
+            // Cílové rozměry a pozice pro "srolování"
+            const finalX = targetRect.left;
+            const finalY = targetRect.top;
+            const finalWidth = targetRect.width;
+            const finalHeight = targetRect.height;
+            const finalFontSize = parseFloat(getComputedStyle(targetEl.querySelector('.kontakt')).fontSize);
+            const finalBorderRadius = parseFloat(getComputedStyle(targetEl).borderRadius);
+            const finalBackground = getComputedStyle(targetEl).backgroundColor;
 
-            // Nastavíme transition pro let do lisu (změníme na transform a opacity, ne all)
-            flyingEl.style.transition = 'transform 0.8s ease-in-out, opacity 0.8s ease-in-out';
-            flyingEl.style.transform = `translate(${targetX - flyingEl.offsetLeft}px, ${targetY - flyingEl.offsetTop}px) scale(0.2)`; /* Letí a zmenší se */
-            flyingEl.style.opacity = '0';
+            // Změníme transition, aby animoval více vlastností
+            flyingEl.style.transition = 'all 0.8s ease-in-out';
+            
+            // Nastavíme cílové styly pro transformaci
+            flyingEl.style.left = `${finalX}px`;
+            flyingEl.style.top = `${finalY}px`;
+            flyingEl.style.width = `${finalWidth}px`;
+            flyingEl.style.height = `${finalHeight}px`;
+            flyingEl.style.fontSize = `${finalFontSize}px`;
+            flyingEl.style.borderRadius = `${finalBorderRadius}px`;
+            flyingEl.style.background = finalBackground; /* Přechod na barvu lisu */
+            flyingEl.style.opacity = '0'; /* Pomalu mizí */
+            flyingEl.style.transform = 'scale(0.8)'; /* Zmenší se k velikosti lisu */
+            flyingEl.innerText = ''; // Vymažeme text, jakmile se sroluje
+            
         }, 1500); // Zobrazí fullscreen na 1.5 sekundy
 
         flyingEl.addEventListener('transitionend', () => {
