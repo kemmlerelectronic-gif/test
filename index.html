@@ -24,7 +24,7 @@ align-items:center;
 padding:15px 25px;
 }
 .logo {
-    font-size: 42px;
+    font-size: 36px;
     font-weight: bold;
     background: linear-gradient(45deg, #22c55e); 
     -webkit-background-clip: text;
@@ -77,6 +77,7 @@ padding:25px;
 border-radius:18px;
 text-align:center;
 transition:.3s;
+position: relative; /* Pro správné zobrazení animačního elementu */
 }
 .card.assigned{
 background:#22c55e90;
@@ -114,10 +115,10 @@ transform:scale(1.05);
 .card.active .lis {
     animation: lisBlink 1.2s ease forwards;
 }
-.kontakt{font-size:34px;color:#22d3ee}
-.prurez{font-size:34px;color:#fbbf24}
-.jmeno{font-size:34px;color:#a3e635}
-.time{font-size:26px;color:#cbd5f5;margin-top:4px}
+.kontakt{font-size:22px;color:#22d3ee}
+.prurez{font-size:20px;color:#fbbf24}
+.jmeno{font-size:18px;color:#a3e635}
+.time{font-size:16px;color:#cbd5f5;margin-top:4px}
 .hotovo{
 margin-top:10px;
 padding:6px 14px;
@@ -138,7 +139,7 @@ overflow-y:auto;
 padding:10px;
 border-bottom:1px solid #1e293b;
 margin-bottom:8px;
-font-size:28px;
+position: relative; /* Pro správné zobrazení animačního elementu */
 }
 .assign button{
 margin:2px;
@@ -205,13 +206,30 @@ padding:40px;
 display:none;
 }
 .screen{display:none}
+
+/* Styl pro animovaný "létající" prvek */
+.flying-request {
+    position: fixed;
+    z-index: 9999;
+    background: linear-gradient(45deg, #22c55e, #fbbf24); /* Barva požadavku */
+    color: white;
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-size: 1.2em;
+    font-weight: bold;
+    white-space: nowrap;
+    transition: transform 0.8s ease-in-out, opacity 0.8s ease-in-out; /* Animace transformace a průhlednosti */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    opacity: 1;
+}
+
 </style>
 </head>
 
 <body>
 
 <div class="topbar">
-<div class="logo">KEMMSOFT 4.0.0 Testing</div>
+<div class="logo">KEMMSOFT 4.0 Testing</div>
 <div class="nav">
 <button onclick="showScreen('setup')">Nastavení</button>
 <button onclick="showScreen('production')">Výrobní obrazovka</button>
@@ -294,26 +312,20 @@ onValue(ref(db,'lisy'),snap=>{
   const data=snap.val();
   const currentLisy = data ? Object.values(data) : Array.from({length:LIS_COUNT},()=>emptyLis());
   
-  // Zkontrolujeme, zda došlo ke změně, která by měla spustit zvuk
   currentLisy.forEach((lis, i) => {
     const oldLis = lastLisy[i];
-    // Porovnáváme kontakt – pokud existuje v novém, ale ne v starém, nebo se změnil
-    // A zároveň se ujistíme, že lis.kontakt není prázdný, aby se nespouštěl zvuk při vymazání
     if (lis.kontakt && (!oldLis || oldLis.kontakt !== lis.kontakt)) {
-      // Kontakt se změnil, spustíme blikání a zvuk
-      // Funkce blink v Beta4.html očekává objekt p, index i a volitelný assigned
       blink(lis, i, true); 
     }
   });
 
   lisy = currentLisy;
-  // Zajistíme, že pole lisy má vždy správnou délku
   while(lisy.length<LIS_COUNT) lisy.push(emptyLis());
   
   lastLisy = JSON.parse(JSON.stringify(lisy)); // Aktualizujeme lastLisy pro další porovnání
 
   renderAll();
-  updateHeader(); // aktualizace hlavního banneru
+  updateHeader();
 });
 
 onValue(ref(db,'pozadavky'),snap=>{
@@ -356,7 +368,7 @@ function renderQueue(id,setup){
   q.innerHTML="";
   pozadavky.forEach((p,i)=>{
     q.innerHTML+=`
-      <div class="queueItem">
+      <div class="queueItem" id="request-${p.key}">
         <b>${p.kontakt}</b> - ${p.prurez} - ${p.jmeno}
         <div class="time">${p.time}</div>
         ${setup?`
@@ -368,8 +380,19 @@ function renderQueue(id,setup){
   });
 }
 
-window.assign=function(lisIndex,reqIndex){
+window.assign=async function(lisIndex,reqIndex){
   const p=pozadavky[reqIndex];
+  if (!p) return;
+
+  // Spustíme animaci PŘED odstraněním z Firebase
+  const sourceElement = document.getElementById(`request-${p.key}`);
+  const targetElement = document.getElementById(`lis${lisIndex}`);
+
+  if (sourceElement && targetElement) {
+    await animateFlyingRequest(sourceElement, targetElement, p);
+  }
+
+  // Teprve POTÉ aktualizujeme Firebase
   set(ref(db,`lisy/${lisIndex}`),{
     kontakt:p.kontakt,
     prurez:p.prurez,
@@ -377,8 +400,6 @@ window.assign=function(lisIndex,reqIndex){
     time:timeNow()
   });
   remove(ref(db,'pozadavky/'+p.key));
-  // Funkce blink se nyní zavolá automaticky z onValue listeneru
-  // jelikož se změní data v `lisy` na Firebase.
 }
 
 window.clearLis=function(i){
@@ -416,7 +437,7 @@ function blink(p,i,assigned=false){
     if(assigned) card.classList.add("assigned");
     setTimeout(()=>{
         card?.classList.remove("active");
-        if(assigned) card?.classList.add("assigned"); // Ujistíme se, že assigned zůstane
+        if(assigned) card?.classList.add("assigned");
     },1200);
   }
 
@@ -425,12 +446,48 @@ function blink(p,i,assigned=false){
   header.classList.add("blink");
   setTimeout(()=>header.classList.remove("blink"),3000);
 
-  const currentScreen=document.querySelector(".screen:not([style*='display: none'])")?.id; // Bezpečnější přístup k .id
+  const currentScreen=document.querySelector(".screen:not([style*='display: none'])")?.id;
   if(currentScreen==="production"){ 
     showFullscreenPopup(`${p.kontakt} - ${p.prurez} - ${p.jmeno} → LIS ${i+1}`);
   }
 
   tone();
+}
+
+// NOVÁ FUNKCE PRO LÉTAJÍCÍ ANIMACI
+function animateFlyingRequest(sourceEl, targetEl, requestData) {
+    return new Promise(resolve => {
+        const flyingEl = document.createElement('div');
+        flyingEl.className = 'flying-request';
+        flyingEl.innerText = `${requestData.kontakt} - ${requestData.prurez} - ${requestData.jmeno}`;
+        document.body.appendChild(flyingEl);
+
+        const sourceRect = sourceEl.getBoundingClientRect();
+        const targetRect = targetEl.getBoundingClientRect();
+
+        // Nastavení počáteční pozice
+        flyingEl.style.left = `${sourceRect.left}px`;
+        flyingEl.style.top = `${sourceRect.top}px`;
+        flyingEl.style.width = `${sourceRect.width}px`; // Zachováme šířku
+        flyingEl.style.height = `${sourceRect.height}px`; // Zachováme výšku
+        flyingEl.style.display = 'flex'; // Aby text byl centrovaný
+
+        // Pozice cíle - střed cílového elementu
+        const targetX = targetRect.left + (targetRect.width / 2) - (sourceRect.width / 2); // Cílem je střed karty, ne její levý horní roh
+        const targetY = targetRect.top + (targetRect.height / 2) - (sourceRect.height / 2); // Cílem je střed karty
+
+        // Spustíme animaci po krátké prodlevě (aby se vykreslil na startovní pozici)
+        requestAnimationFrame(() => {
+            flyingEl.style.transform = `translate(${targetX - sourceRect.left}px, ${targetY - sourceRect.top}px) scale(0.5)`; // Letí na střed cíle a zmenší se
+            flyingEl.style.opacity = '0'; // Postupně zmizí
+        });
+
+        // Po dokončení animace element odstraníme
+        flyingEl.addEventListener('transitionend', () => {
+            flyingEl.remove();
+            resolve();
+        }, { once: true }); // Zajistí, že event listener se spustí jen jednou
+    });
 }
 
 function showFullscreenPopup(text){
@@ -448,8 +505,6 @@ function updateHeader(){
     if(l.kontakt !== "") last = `${l.kontakt} - ${l.prurez} - ${l.jmeno} → LIS ${i+1}`;
   });
   document.getElementById("mainHeader").innerText = last || "---";
-  // Původní kód zde volal showFullscreenPopup(last), ale to by mohlo vyvolat popup i když se nic nezměnilo
-  // Tuto logiku teď řeší `blink` volaný z `onValue`
 }
 
 function popup(text){
