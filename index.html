@@ -28,7 +28,8 @@ background: rgba(0, 0, 0, 0.6); /* Lehce průhledné pozadí pro topbar */
 box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 transition: all 0.3s ease; /* Pro animaci skrytí/zobrazení */
 }
-.topbar.hidden { /* Třída pro skrytí topbaru */
+/* ----- OPRAVENÁ TŘÍDA PRO SKRYTÍ TOPBARU ----- */
+.topbar.hidden { 
     transform: translateY(-100%);
     opacity: 0;
     pointer-events: none; /* Zakáže interakci s neviditelným topbarem */
@@ -46,22 +47,22 @@ transition: all 0.3s ease; /* Pro animaci skrytí/zobrazení */
     transition: all 0.3s ease;
     animation: logoPulse 4s infinite alternate ease-in-out;
 }
-/* Keyframes pro pulzování loga - pouze zeleno-černě */
+/* Keyframes pro pulzování loga - NYNÍ ZELENÁ-ZELENÁ */
 @keyframes logoPulse {
     0% {
-        background: linear-gradient(45deg, #22c55e, #34d399);
+        background: linear-gradient(45deg, #22c55e, #34d399); /* Původní zářivá zelená */
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         text-shadow: 0 0 15px rgba(34, 197, 94, 0.8), 0 0 25px rgba(52, 211, 153, 0.6);
     }
     50% {
-        background: linear-gradient(45deg, #111827, #020617); /* Tmavá barva pozadí */
+        background: linear-gradient(45deg, #166534, #1a9a4e); /* Tmavší zelený gradient, podobný active stavu karet */
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        text-shadow: 0 0 5px rgba(0,0,0,0.5); /* Jemný tmavý stín */
+        text-shadow: 0 0 8px rgba(22, 101, 52, 0.7); /* Jemný stín ladící s tmavší zelenou */
     }
     100% {
-        background: linear-gradient(45deg, #22c55e, #34d399);
+        background: linear-gradient(45deg, #22c55e, #34d399); /* Zpět na původní zářivou zelenou */
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         text-shadow: 0 0 15px rgba(34, 197, 94, 0.8), 0 0 25px rgba(52, 211, 153, 0.6);
@@ -360,6 +361,9 @@ transition: all 0.3s ease;
     background: linear-gradient(145deg, #020617ee, #111827ee);
     border-radius: 22px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.7);
+    /* --- RÁMEČEK OKOLO FORMULÁŘE --- */
+    border: 2px solid rgba(34, 197, 94, 0.5); /* Stejná zelená jako pod hlavním headerem */
+    position: relative; /* Pro případné další efekty */
 }
 .screen#requests h2 {
     color: #22c55e;
@@ -452,7 +456,7 @@ display:none;
     align-items: center;
     justify-content: center;
     text-align: center;
-    transition: all 0.8s ease-in-out; /* Univerzální transition pro létající prvky */
+    /* transition: all 0.8s ease-in-out;  <-- Přesunuto do JS, protože se dynamicky mění */
 }
 
 /* Specific styling for fullscreen animation */
@@ -466,8 +470,6 @@ display:none;
     top: 0;
     opacity: 0; 
     transform: scale(0.1); 
-    /* Přidáno přechodné (intermediární) barvy pro fázi, kdy je na obrazovce */
-    /* Tyto barvy se nastaví v JS po fázi příletu */
 }
 
 </style>
@@ -808,20 +810,25 @@ function animateFlyingRequest(sourceEl, targetEl, requestData) {
         const sourceRect = sourceEl.getBoundingClientRect();
         const targetRect = targetEl.getBoundingClientRect();
 
-        flyingEl.style.left = `${sourceRect.left}px`;
-        flyingEl.style.top = `${sourceRect.top}px`;
+        // Nastavíme počáteční pozici a velikost pomocí CSS transform a opacity
+        flyingEl.style.left = '0'; // Důležité nastavit 0, budeme používat translateX/Y
+        flyingEl.style.top = '0';  // Důležité nastavit 0, budeme používat translateX/Y
+        flyingEl.style.transform = `translate(${sourceRect.left}px, ${sourceRect.top}px) scale(1)`;
         flyingEl.style.width = `${sourceRect.width}px`; 
         flyingEl.style.height = `${sourceRect.height}px`; 
-        
-        flyingEl.style.transform = `translate(0, 0) scale(1)`; 
         flyingEl.style.opacity = '1';
+        flyingEl.style.transition = 'transform 0.8s ease-in-out, opacity 0.8s ease-in-out, width 0.8s ease-in-out, height 0.8s ease-in-out'; // Animujeme více vlastností
 
+        // Cílová pozice pro transform
         const targetX = targetRect.left + (targetRect.width / 2) - (sourceRect.width / 2);
         const targetY = targetRect.top + (targetRect.height / 2) - (sourceRect.height / 2);
 
+        // Po krátké prodlevě pro vykreslení počátečního stavu, nastavíme cílový stav
         requestAnimationFrame(() => {
-            flyingEl.style.transform = `translate(${targetX - sourceRect.left}px, ${targetY - sourceRect.top}px) scale(0.5)`;
+            flyingEl.style.transform = `translate(${targetX}px, ${targetY}px) scale(0.5)`;
             flyingEl.style.opacity = '0';
+            flyingEl.style.width = `${sourceRect.width / 2}px`; // zmenšíme i fyzickou šířku
+            flyingEl.style.height = `${sourceRect.height / 2}px`; // zmenšíme i fyzickou výšku
         });
 
         flyingEl.addEventListener('transitionend', () => {
@@ -846,31 +853,38 @@ function animateFlyingRequestFromCenter(targetEl, requestDetails) {
 
         const targetRect = targetEl.getBoundingClientRect();
 
-        flyingEl.style.width = '300px'; 
-        flyingEl.style.height = '120px'; 
+        // Počáteční velikost letícího prvku
+        const initialWidth = 300; 
+        const initialHeight = 120; 
+
+        flyingEl.style.width = `${initialWidth}px`; 
+        flyingEl.style.height = `${initialHeight}px`; 
         flyingEl.style.whiteSpace = 'normal'; 
 
-        const startX = window.innerWidth / 2 - (flyingEl.offsetWidth / 2);
-        const startY = window.innerHeight / 2 - (flyingEl.offsetHeight / 2);
+        const startX = window.innerWidth / 2 - (initialWidth / 2);
+        const startY = window.innerHeight / 2 - (initialHeight / 2);
 
-        flyingEl.style.left = `${startX}px`;
-        flyingEl.style.top = `${startY}px`;
-
-        flyingEl.style.transform = `scale(0)`; 
+        flyingEl.style.left = '0'; // Důležité nastavit 0
+        flyingEl.style.top = '0';  // Důležité nastavit 0
+        flyingEl.style.transform = `translate(${startX}px, ${startY}px) scale(0)`; // Počáteční transform
         flyingEl.style.opacity = '0';
+        flyingEl.style.transition = 'transform 0.8s ease-in-out, opacity 0.8s ease-in-out, width 0.8s ease-in-out, height 0.8s ease-in-out';
 
         requestAnimationFrame(() => {
-            flyingEl.style.transform = `scale(1)`;
+            // První fáze: objevení a zvětšení uprostřed
+            flyingEl.style.transform = `translate(${startX}px, ${startY}px) scale(1)`;
             flyingEl.style.opacity = '1';
             
             setTimeout(() => { 
-                const targetX = targetRect.left + (targetRect.width / 2) - (flyingEl.offsetWidth / 2);
-                const targetY = targetRect.top + (targetRect.height / 2) - (flyingEl.offsetHeight / 2);
+                // Druhá fáze: pohyb k cíli a zmenšení
+                const targetX = targetRect.left + (targetRect.width / 2) - (initialWidth / 2);
+                const targetY = targetRect.top + (targetRect.height / 2) - (initialHeight / 2);
                 
-                flyingEl.style.transition = 'transform 0.8s ease-in-out, opacity 0.8s ease-in-out';
-                flyingEl.style.transform = `translate(${targetX - startX}px, ${targetY - startY}px) scale(0.5)`;
+                flyingEl.style.transform = `translate(${targetX}px, ${targetY}px) scale(0.5)`;
                 flyingEl.style.opacity = '0';
-            }, 500); 
+                flyingEl.style.width = `${initialWidth / 2}px`; 
+                flyingEl.style.height = `${initialHeight / 2}px`; 
+            }, 500); // Krátká prodleva pro první fázi
         });
 
         flyingEl.addEventListener('transitionend', () => {
@@ -995,16 +1009,28 @@ window.showScreen=function(id){
     updateHeader();
     setActiveNavButton(id); 
 
-    // Logika pro skrytí/zobrazení topbaru
-    // Topbar se skryje JEN na obrazovce 'requests'
-    if (id === 'requests') {
+    // --- ZDE JE OPRAVA PRO SKRYTÍ TOPBARU ---
+    // Skrývá topbar na obrazovkách 'requests' A 'production'
+    if (id === 'requests' || id === 'production') { 
         mainTopbar.classList.add('hidden');
     } else {
         mainTopbar.classList.remove('hidden');
     }
 }
 
-showScreen("setup"); 
+// Funkce pro detekci URL parametru a přepnutí obrazovky
+function checkUrlParams() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('pozadavky')) {
+        showScreen('requests');
+    } else {
+        showScreen('setup'); // Výchozí obrazovka, pokud není parametr
+    }
+}
+
+// Spustit kontrolu URL parametrů po načtení DOMu
+document.addEventListener('DOMContentLoaded', checkUrlParams);
+
 setInterval(()=>{
   const production = document.getElementById("production");
   if(production.style.display !== "block") return;
