@@ -1,0 +1,27 @@
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <title>Speech Test</title>
+        </head>
+        <body>
+        <button onclick="testSpeech()">Speak</button>
+        <script>
+        function testSpeech() {
+            if ('speechSynthesis' in window) {
+                const synth = window.speechSynthesis;
+                const utterance = new SpeechSynthesisUtterance('Ahoj, toto je test hlasového výstupu z televize.');
+                const voices = synth.getVoices();
+                const czechVoice = voices.find(voice => voice.lang === 'cs-CZ');
+                if (czechVoice) {
+                    utterance.voice = czechVoice;
+                } else {
+                    console.warn("Český hlas nenalezen, používám výchozí.");
+                }
+                synth.speak(utterance);
+            } else {
+                alert('Speech Synthesis API není v tomto prohlížeči podporováno.');
+            }
+        }
+        </script>
+        </body>
+        </html>
