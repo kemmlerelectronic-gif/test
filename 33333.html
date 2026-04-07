@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KEMMSOFT 5.0 | AURORA OS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --neon-blue: #00f2ff;
+            --neon-green: #00ff9d;
+            --neon-red: #ff0055;
+            --bg-dark: #020b14;
+            --glass: rgba(0, 20, 40, 0.75);
+            --border-glow: 0 0 15px rgba(0, 242, 255, 0.4);
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(0, 50, 100, 0.2) 0%, transparent 80%),
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 100%, 100% 4px, 3px 100%;
+            margin: 0;
+            color: #e0faff;
+            overflow-x: hidden;
+            height: 100vh;
+        }
+
+        /* --- SCI-FI TOPBAR --- */
+        .topbarContainer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 30px;
+            background: rgba(0, 10, 20, 0.9);
+            border-bottom: 2px solid var(--neon-blue);
+            box-shadow: var(--border-glow);
+            clip-path: polygon(0 0, 100% 0, 98% 100%, 2% 100%);
+        }
+
+        .kemmsTop {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            background: linear-gradient(to right, var(--neon-blue), #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px var(--neon-blue));
+        }
+
+        .realtime-clock {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5em;
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        /* --- GRID SYSTEM --- */
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+            padding: 20px;
+            height: calc(100vh - 120px);
+        }
+
+        /* --- CARDS (LISY) --- */
+        .card {
+            background: var(--glass);
+            border: 1px solid rgba(0, 242, 255, 0.2);
+            border-radius: 5px;
+            position: relative;
+            padding: 20px;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(10px);
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+            animation: scanline 3s infinite linear;
+        }
+
+        @keyframes scanline {
+            0% { top: 0%; } 100% { top: 100%; }
+        }
+
+        .card.assigned {
+            border-color: var(--neon-green);
+            box-shadow: inset 0 0 20px rgba(0, 255, 157, 0.2), 0 0 15px rgba(0, 255, 157, 0.1);
+        }
+
+        .lis-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px;
+            color: var(--neon-blue);
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .data-label { color: rgba(0, 242, 255, 0.6); font-size: 0.8em; text-transform: uppercase; }
+        .data-value { font-size: 1.8em; font-weight: 700; display: block; margin-bottom: 5px; }
+        .val-kontakt { color: #fff; }
+        .val-prurez { color: var(--neon-green); }
+        .val-jmeno { color: #ffca28; }
+
+        /* --- QUEUE (FRONTA) --- */
+        .queue {
+            background: rgba(0, 5, 10, 0.8);
+            border-left: 1px solid var(--neon-blue);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .queueItem {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid var(--neon-blue);
+            padding: 12px;
+            font-size: 1.1em;
+            position: relative;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* --- BUTTONS --- */
+        button {
+            font-family: 'Orbitron', sans-serif;
+            background: transparent;
+            color: var(--neon-blue);
+            border: 1px solid var(--neon-blue);
+            padding: 10px 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            background: var(--neon-blue);
+            color: #000;
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
+
+        /* --- FORMULÁŘ --- */
+        .scifi-input {
+            background: rgba(0, 242, 255, 0.05);
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            color: white;
+            padding: 12px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.2em;
+        }
+
+        .scifi-input:focus {
+            outline: none;
+            border-color: var(--neon-blue);
+            background: rgba(0, 242, 255, 0.1);
+        }
+
+        /* --- STATUS HEADER --- */
+        .header {
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5em;
+            padding: 15px;
+            background: linear-gradient(90deg, transparent, rgba(0, 242, 255, 0.1), transparent);
+            border-bottom: 1px solid rgba(0, 242, 255, 0.3);
+            margin-bottom: 10px;
+        }
+
+        /* --- ANIMACE PRO NOVÝ POŽADAVEK --- */
+        .glitch-alert {
+            animation: glitch 0.5s infinite;
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); text-shadow: 2px 0 red, -2px 0 blue; }
+            20% { transform: translate(-2px, 2px); }
+            100% { transform: translate(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbarContainer">
+    <div class="kemmsTop">AURORA OS // V5.0</div>
+    <div class="realtime-clock" id="realtimeClock">00:00:00</div>
+    <div class="nav-cluster">
+        <button onclick="switchTab('setup')">Terminal</button>
+        <button onclick="switchTab('production')">HUD View</button>
+        <button onclick="switchTab('request')">Input</button>
+    </div>
+</div>
+
+<div class="header" id="statusHeader">SYSTEM READY // STANDBY</div>
+
+<div id="mainContainer">
+    <div id="productionTab" class="layout">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;" id="lisyGrid">
+            </div>
+        
+        <div class="queue">
+            <h3 style="font-family:'Orbitron'; border-bottom: 1px solid var(--neon-blue);">QUEUE_LOG</h3>
+            <div id="queueContent"></div>
+        </div>
+    </div>
+
+    <div id="requestTab" style="display:none; max-width: 500px; margin: 50px auto; padding: 20px;" class="card">
+        <h2 style="font-family:'Orbitron'">NEW_ENTRY</h2>
+        <input id="in_kontakt" class="scifi-input" placeholder="KONTAKT ID">
+        <input id="in_prurez" class="scifi-input" placeholder="PRŮŘEZ (mm)">
+        <input id="in_jmeno" class="scifi-input" placeholder="OPERÁTOR">
+        <button style="width:100%; margin-top:20px;" onclick="submitNewRequest()">TRANSMIT DATA</button>
+    </div>
+</div>
+
+<script type="module">
+    // Mock databáze pro ukázku (zde by byl tvůj Firebase kód)
+    let state = {
+        lisy: Array(7).fill(null).map((_, i) => ({ id: i+1, kontakt: "", prurez: "", jmeno: "", active: false })),
+        queue: []
+    };
+
+    // --- FUNKCE PRO MLUVENÍ (Speech Synthesis) ---
+    function announce(text) {
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'cs-CZ';
+        msg.rate = 0.9;
+        msg.pitch = 0.8;
+        window.speechSynthesis.speak(msg);
+    }
+
+    // --- UPDATE UI ---
+    function render() {
+        const grid = document.getElementById('lisyGrid');
+        grid.innerHTML = state.lisy.map(lis => `
+            <div class="card ${lis.active ? 'assigned' : ''}">
+                <span class="lis-title">LIS_0${lis.id}</span>
+                <span class="data-label">Contact_ID</span>
+                <span class="data-value val-kontakt">${lis.kontakt || '---'}</span>
+                <span class="data-label">Diameter</span>
+                <span class="data-value val-prurez">${lis.prurez || '---'}</span>
+                <span class="data-label">Operator</span>
+                <span class="data-value val-jmeno">${lis.jmeno || 'VACANT'}</span>
+                ${lis.active ? `<button onclick="completeLis(${lis.id - 1})" style="border-color:var(--neon-red); color:var(--neon-red); font-size:0.7em;">DISCONNECT</button>` : `<div style="height:40px"></div>`}
+            </div>
+        `).join('');
+
+        const qContent = document.getElementById('queueContent');
+        qContent.innerHTML = state.queue.map((q, i) => `
+            <div class="queueItem">
+                <div style="font-weight:bold; color:var(--neon-blue)">#${q.kontakt}</div>
+                <div style="font-size:0.8em">${q.prurez} mm | ${q.jmeno}</div>
+                <button onclick="assignToLis(${i})" style="padding:2px 5px; font-size:10px; margin-top:5px;">ASSIGN</button>
+            </div>
+        `).join('');
+    }
+
+    // --- LOGIKA ---
+    window.submitNewRequest = () => {
+        const req = {
+            kontakt: document.getElementById('in_kontakt').value,
+            prurez: document.getElementById('in_prurez').value,
+            jmeno: document.getElementById('in_jmeno').value
+        };
+        if(!req.kontakt) return;
+        state.queue.push(req);
+        announce("Nový požadavek v systému.");
+        render();
+        // Reset inputů
+        document.querySelectorAll('.scifi-input').forEach(i => i.value = "");
+    };
+
+    window.assignToLis = (queueIdx) => {
+        const emptyIndex = state.lisy.findIndex(l => !l.active);
+        if(emptyIndex === -1) {
+            announce("Všechny lisy jsou obsazeny.");
+            return;
+        }
+        const data = state.queue.splice(queueIdx, 1)[0];
+        state.lisy[emptyIndex] = { ...state.lisy[emptyIndex], ...data, active: true };
+        announce(`Přiřazeno na lis ${emptyIndex + 1}`);
+        render();
+    };
+
+    window.completeLis = (idx) => {
+        state.lisy[idx] = { id: idx+1, kontakt: "", prurez: "", jmeno: "", active: false };
+        render();
+    };
+
+    window.switchTab = (tab) => {
+        document.getElementById('productionTab').style.display = tab === 'production' || tab === 'setup' ? 'grid' : 'none';
+        document.getElementById('requestTab').style.display = tab === 'request' ? 'block' : 'none';
+    };
+
+    // Hodiny
+    setInterval(() => {
+        document.getElementById('realtimeClock').innerText = new Date().toLocaleTimeString();
+    }, 1000);
+
+    render();
+</script>
+
+</body>
+</html>
