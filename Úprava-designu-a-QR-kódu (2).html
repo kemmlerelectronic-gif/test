@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KemmSoft Press</title>
+<!-- QuaggaJS pro skenování QR kódů (lokálně nebo z CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2@1.8.3/dist/quagga.js"></script>
+
+<style>
+/* Základní styly */
+body{
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background:url("background.png") center/cover fixed; /* Předpokládá se existující background.png */
+    margin:0;
+    color:white;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.4);
+    z-index:-1;
+}
+
+/* --- Topbar --- */
+.topbarContainer{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:15px 25px;
+    background: rgba(0, 0, 0, 0.6);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    transition: all 0.3s ease;
+}
+.kemmsTop {
+    font-size: 38px;
+    font-weight: 900;
+    background: linear-gradient(45deg, #22c55e, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 15px rgba(34, 197, 94, 0.8), 0 0 25px rgba(52, 211, 153, 0.6);
+    letter-spacing: 1px;
+    animation: logoPulse 4s infinite alternate ease-in-out;
+}
+@keyframes logoPulse {
+    0% {
+        background: linear-gradient(45deg, #22c55e, #34d399);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 15px rgba(34, 197, 94, 0.8), 0 0 25px rgba(52, 211, 153, 0.6);
+    }
+    50% {
+        background: linear-gradient(45deg, #166534, #1a9a4e);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 8px rgba(22, 101, 52, 0.7);
+    }
+    100% {
+        background: linear-gradient(45deg, #22c55e, #34d399);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 15px rgba(34, 197, 94, 0.8), 0 0 25px rgba(52, 211, 153, 0.6);
+    }
+}
+.topbar button{
+    padding:12px 22px;
+    margin-left:10px;
+    border:none;
+    border-radius:8px;
+    background: linear-gradient(135deg, #22c55e, #1a9a4e);
+    color:white;
+    cursor:pointer;
+    font-size: 1.1em;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+.topbar button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    transform: skewX(-30deg);
+    transition: all 0.5s ease;
+}
+.topbar button:hover::before {
+    left: 100%;
+}
+.topbar button:hover {
+    background: linear-gradient(135deg, #1a9a4e, #22c55e);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(34, 197, 94, 0.6);
+}
+.topbar button.active-nav {
+    background: linear-gradient(135deg, #0f4f2c, #166534);
+    box-shadow: 0 2px 10px rgba(34, 197, 94, 0.8), inset 0 0 8px rgba(34, 197, 94, 0.6);
+    transform: translateY(0);
+    border: 1px solid #22c55e;
+}
+
+/* --- Hlavní obrazovka (Výrobní obrazovka) --- */
+#productionScreen {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 sloupce pro 9 strojů */
+    gap: 20px;
+    padding: 20px;
+    flex-grow: 1; /* Zajistí, že zabere dostupný prostor */
+    /* Nové: Centrování obsahu, pokud není dostatek karet */
+    justify-content: center;
+    align-content: center;
+}
+.machine-card {
+    background: linear-gradient(145deg, #020617ee, #111827ee);
+    padding:30px; /* Trochu větší padding */
+    border-radius:22px;
+    text-align:center;
+    transition: all.4s ease-out;
+    position: relative;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.7), inset 0 0 10px rgba(255,255,255,0.05);
+    border: 1px solid rgba(34, 197, 94, 0.15);
+    cursor: pointer; /* Pro klikání na kartu pro zadání */
+    display: flex; /* Pro flexbox uspořádání obsahu */
+    flex-direction: column; /* Položky pod sebou */
+    justify-content: center; /* Vertikálně vycentrovat */
+    min-height: 250px; /* Minimální výška karty pro lepší vzhled na TV */
+}
+/* Stroj je "assigned" (má zakázku/nástroj) */
+.machine-card.assigned{
+    background: linear-gradient(145deg, #166534cc, #1a9a4ecc); /* Zelenější, ale stále průhledný gradient */
+    color: #e0ffe0; /* Světle zelený text, aby vynikl */
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.7), inset 0 0 15px rgba(34, 197, 94, 0.5);
+    border-color: #22c55e;
+    animation: pulseBorder 2s infinite ease-in-out;
+}
+@keyframes pulseBorder {
+    0% { border-color: rgba(34, 197, 94, 0.5); box-shadow: 0 0 15px rgba(34, 197, 94, 0.4), inset 0 0 8px rgba(34, 197, 94, 0.3); }
+    50% { border-color: rgba(34, 197, 94, 0.8); box-shadow: 0 0 25px rgba(34, 197, 94, 0.7), inset 0 0 12px rgba(34, 197, 94, 0.5); }
+    100% { border-color: rgba(34, 197, 94, 0.5); box-shadow: 0 0 15px rgba(34, 197, 94, 0.4), inset 0 0 8px rgba(34, 197, 94, 0.3); }
+}
+/* Stroj je "active" (právě se mu přiřadila zakázka) */
+.machine-card.active{
+    background: linear-gradient(145deg, #22c55e, #1a9a4e);
+    color: #000;
+    box-shadow: 0 0 80px rgba(34, 197, 94, 0.9), 0 0 30px rgba(255,255,255,0.6);
+    transform: scale(1.08);
+    border-color: #22c55e;
+    animation: cardActiveScale 1.2s forwards;
+}
+@keyframes cardActiveScale {
+    0% { transform: scale(1); box-shadow: 0 8px 20px rgba(0,0,0,0.7), inset 0 0 10px rgba(255,255,255,0.05); }
+    50% { transform: scale(1.1); box-shadow: 0 0 80px rgba(34, 197, 94, 0.9), 0 0 30px rgba(255,255,255,0.6); }
+    100% { transform: scale(1.08); box-shadow: 0 0 80px rgba(34, 197, 94, 0.9), 0 0 30px rgba(255,255,255,0.6); }
+}
+
+.machine-id {
+    font-size: 56px; /* Větší pro TV */
+    font-weight: 900;
+    background: linear-gradient(45deg, #6ee7b7, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 6px 6px 12px rgba(0,0,0,0.8), 8px 8px 16px rgba(0,0,0,0.7);
+    margin-bottom: 30px; /* Více místa */
+    line-height: 1.2;
+}
+
+/* Styly pro číslo zakázky a nástroje */
+.order-number,.tool-number {
+    font-size: 44px; /* Větší pro TV */
+    color: #22d3ee; /* Modrá, kontrastní barva */
+    margin-top: 20px; /* Oddělení */
+    font-weight: 800;
+    display: flex; /* Flexbox pro zarovnání popisku a čísla */
+    flex-direction: column; /* Popisek nad číslem */
+    align-items: center; /* Centrování obsahu */
+    line-height: 1.2; /* Větší mezera mezi řádky */
+    padding: 8px 0; /* Vertikální padding pro pulzující efekt */
+}
+.order-number span,.tool-number span {
+    font-size: 0.5em; /* Menší popisek */
+    color: #a3e635; /* Zelená pro popisky */
+    font-weight: normal;
+    display: block;
+    margin-bottom: 5px; /* Mezera mezi popiskem a číslem */
+    opacity: 0.8; /* Jemnější popisek */
+}
+
+/* ANIMACE PRO PULZOVÁNÍ TEXTU ZAKÁZKY/NÁSTROJE PŘI ASSIGNED STAVU */
+@keyframes textPulse {
+    0% {
+        transform: scale(1);
+        color: #22d3ee;
+        text-shadow: 0 0 5px rgba(34, 211, 238, 0.5);
+    }
+    50% {
+        transform: scale(1.03); /* Lehké zvětšení */
+        color: #e0ffff; /* Světlejší modrá */
+        text-shadow: 0 0 15px rgba(34, 211, 238, 0.8), 0 0 8px rgba(255, 255, 255, 0.5); /* Výraznější záře */
+    }
+    100% {
+        transform: scale(1);
+        color: #22d3ee;
+        text-shadow: 0 0 5px rgba(34, 211, 238, 0.5);
+    }
+}
+.machine-card.assigned.order-number,
+.machine-card.assigned.tool-number {
+    animation: textPulse 2s infinite alternate ease-in-out;
+}
+
+/* --- Setup Screen --- */
+#setupScreen {
+    display: none; /* Skryté ve výchozím stavu */
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 30px;
+    background: linear-gradient(145deg, #020617ee, #111827ee);
+    border-radius: 22px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.7);
+    border: 2px solid rgba(34, 197, 94, 0.5);
+}
+#setupScreen h3 {
+    color: #22c55e;
+    text-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+    margin-bottom: 30px;
+    font-size: 2.2em;
+    text-align: center;
+}
+#setupScreen label {
+    display: block;
+    margin-bottom: 8px;
+    color: #e0ffe0;
+    font-size: 1.1em;
+    font-weight: 600;
+}
+#setupScreen input, #setupScreen select {
+    width: calc(100% - 22px);
+    padding: 12px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    border: 1px solid #1e293b;
+    background: #0f172a;
+    color: white;
+    font-size: 1.2em;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+    -webkit-appearance: none; /* pro styl selectu */
+    -moz-appearance: none;
+    appearance: none;
+}
+#setupScreen button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 1.2em;
+    font-weight: bold;
+    cursor: pointer;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+    transition: all 0.3s ease;
+}
+#setupScreen button:hover {
+    background: linear-gradient(90deg, #60a5fa, #3b82f6);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(59, 130, 246, 0.6);
+}
+
+/* --- Requests Screen (zadání přes QR) --- */
+#requestsScreen {
+    display: none; /* Skryté ve výchozím stavu */
+    flex-grow: 1; /* Zajistí, že zabere dostupný prostor */
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+#requestsScreen > div { /* Kontejner pro tlačítko */
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 25px;
+    background: linear-gradient(145deg, #020617ee, #111827ee);
+    border-radius: 22px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.7);
+    border: 2px solid rgba(34, 197, 94, 0.5);
+    text-align: center;
+}
+#requestsScreen h3 {
+    color: #22c55e;
+    text-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+    margin-bottom: 30px;
+    font-size: 2.2em;
+}
+#requestsScreen button.addBtn { /* Pro tlačítko "Skenovat QR kód" */
+    width: 100%;
+    padding: 15px;
+    font-size: 1.2em;
+}
+
+/* --- QR Scan Dialog --- */
+.qr-scan-dialog {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.qr-scan-dialog h3 {
+    color: #22c55e;
+    margin-bottom: 20px;
+    font-size: 2.5em;
+}
+#qrVideo {
+    width: 80%;
+    max-width: 600px;
+    height: auto;
+    border: 3px solid #22c55e;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.7);
+}
+.qr-scan-dialog.close-button {
+    margin-top: 30px;
+    padding: 12px 25px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+.qr-scan-dialog.close-button:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.6);
+}
+
+/* --- QR Input Form Dialog --- */
+.qr-input-form {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 1001;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.qr-input-form > div {
+    background: linear-gradient(145deg, #020617ee, #111827ee);
+    padding: 40px;
+    border-radius: 22px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.8);
+    border: 2px solid rgba(34, 197, 94, 0.7);
+    text-align: center;
+    max-width: 500px;
+    width: 90%;
+}
+.qr-input-form h3 {
+    color: #22c55e;
+    margin-bottom: 30px;
+    font-size: 2.8em;
+}
+.qr-input-form label {
+    display: block;
+    text-align: left;
+    margin-bottom: 8px;
+    color: #e0ffe0;
+    font-size: 1.1em;
+    font-weight: 600;
+}
+.qr-input-form input {
+    width: calc(100% - 22px);
+    padding: 12px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    border: 1px solid #1e293b;
+    background: #0f172a;
+    color: white;
+    font-size: 1.2em;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+}
+.qr-input-form.submit-button,.qr-input-form.cancel-button {
+    width: calc(50% - 10px);
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 1.2em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 0 5px;
+}
+.qr-input-form.submit-button {
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+}
+.qr-input-form.submit-button:hover {
+    background: linear-gradient(90deg, #60a5fa, #3b82f6);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(59, 130, 246, 0.6);
+}
+.qr-input-form.cancel-button {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
+}
+.qr-input-form.cancel-button:hover {
+    background: linear-gradient(90deg, #dc2626, #ef4444);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(239, 68, 68, 0.6);
+}
+
+/* --- Media Queries pro menší obrazovky --- */
+@media (max-width: 1200px) { /* Pro menší TV nebo velké monitory */
+   .machine-id { font-size: 48px; margin-bottom: 25px;}
+   .order-number,.tool-number { font-size: 38px; margin-top: 15px;}
+}
+@media (max-width: 992px) { /* Tablet landscape */
+    #productionScreen {
+        grid-template-columns: repeat(2, 1fr); /* 2 sloupce na tabletech */
+        gap: 15px;
+        padding: 15px;
+    }
+   .machine-card { min-height: 200px; padding: 25px;}
+   .machine-id { font-size: 38px; margin-bottom: 20px;}
+   .order-number,.tool-number { font-size: 30px; margin-top: 10px;}
+   .topbar button { padding: 10px 18px; font-size: 1em; margin-left: 8px;}
+   .kemmsTop { font-size: 32px;}
+}
+@media (max-width: 768px) { /* Tablet portrait */
+    #productionScreen {
+        grid-template-columns: 1fr; /* 1 sloupec */
+        gap: 10px;
+        padding: 10px;
+    }
+   .machine-card { min-height: 180px; padding: 20px;}
+   .machine-id { font-size: 32px; margin-bottom: 15px;}
+   .order-number,.tool-number { font-size: 26px; margin-top: 8px;}
+   .topbarContainer { flex-direction: column; align-items: flex-start; padding: 10px;}
+   .topbar { margin-top: 10px; width: 100%; display: flex; justify-content: space-around;}
+   .topbar button { flex-grow: 1; margin: 0 2px;}
+    #setupScreen { padding: 20px; max-width: 95%;}
+}
+@media (max-width: 480px) { /* Mobil */
+   .kemmsTop { font-size: 24px;}
+   .topbar button { padding: 8px 10px; font-size: 0.8em;}
+   .machine-id { font-size: 28px;}
+   .order-number,.tool-number { font-size: 22px;}
+   .machine-card { padding: 15px;}
+    #requestsScreen > div { padding: 20px;}
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="topbarContainer">
+<div class="kemmsTop">KemmSoft Press</div>
+<div class="topbar" id="topbar">
+    <button onclick="productionMode()">Výrobní obrazovka</button>
+    <button onclick="requestsMode()">Zadání požadavku</button>
+    <button onclick="setupMode()">Nastavení</button>
+</div>
+</div>
+
+<!-- Hlavní obrazovka - výrobní přehled -->
+<div id="productionScreen">
+    <!-- Karty strojů se budou generovat zde JS -->
+</div>
+
+<!-- Obrazovka pro zadání požadavku (pomocí QR kódu) -->
+<div id="requestsScreen">
+    <div>
+        <h3>Zadání požadavku</h3>
+        <p>Pro zadání zakázky a nástroje naskenujte QR kód stroje.</p>
+        <button class="addBtn" onclick="openQrScanner()">Skenovat QR kód stroje</button>
+    </div>
+</div>
+
+<!-- Obrazovka nastavení -->
+<div id="setupScreen">
+    <h3>Nastavení stroje</h3>
+    <label for="setupMachineSelect">Vyberte stroj:</label>
+    <select id="setupMachineSelect"></select>
+
+    <label for="setupOrderNumber">Číslo zakázky:</label>
+    <input id="setupOrderNumber" placeholder="Zadejte číslo zakázky">
+
+    <label for="setupToolNumber">Číslo nástroje:</label>
+    <input id="setupToolNumber" placeholder="Zadejte číslo nástroje">
+
+    <button onclick="submitSetup()">Uložit nastavení</button>
+</div>
+
+<!-- QR KÓD SCANNER DIALOG -->
+<div id="qrScanDialog" class="qr-scan-dialog">
+    <h3>Skenování QR kódu</h3>
+    <video id="qrVideo" autoplay></video>
+    <button class="close-button" onclick="closeQrScanner()">Zavřít skener</button>
+</div>
+
+<!-- FORMULÁŘ PRO ZADÁNÍ PARAMETRŮ PO SKENOVÁNÍ QR KÓDU -->
+<div id="qrInputForm" class="qr-input-form">
+    <div>
+        <h3 id="qrInputFormTitle">Zadat parametry pro stroj</h3>
+        <label for="qrOrderNumber">Číslo zakázky:</label>
+        <input id="qrOrderNumber" placeholder="Číslo zakázky">
+        <label for="qrToolNumber">Číslo nástroje:</label>
+        <input id="qrToolNumber" placeholder="Číslo nástroje">
+
+        <button class="submit-button" onclick="submitQrParams()">Potvrdit</button>
+        <button class="cancel-button" onclick="cancelQrParams()">Zrušit</button>
+    </div>
+</div>
+
+<script type="module">
+// Firebase importy
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+// Firebase konfigurace
+const firebaseConfig={
+    apiKey:"AIzaSyAhiCfh-Di_NdPO5rGM7CZFQGaSymcdWxI",
+    authDomain:"lisyweb-df6d9.firebaseapp.com",
+    databaseURL:"https://lisyweb-df6d9-default-rtdb.firebaseio.com/",
+    projectId:"lisyweb-df6d9"
+};
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
+
+// Seznam evidenčních čísel strojů
+const MACHINE_IDS = ["5-13", "5-15", "5-16", "5-17", "5-18", "5-19", "5-22", "5-21", "5-24"];
+const LIS_COUNT = MACHINE_IDS.length; // Počet strojů = počet evidenčních čísel
+
+let machines = []; // Pole pro data strojů
+let lastMachines = []; // Pro detekci změn a animací
+
+let qrStream = null; // Stream pro QR skener
+let currentScannedMachineIndex = -1; // Index stroje, pro který se zadávají parametry po skenování
+
+// Funkce pro prázdná data stroje
+function emptyMachine() { return { orderNumber: "", toolNumber: "" }; }
+
+// --- Firebase Listenery ---
+onValue(ref(db,'machines'), snap=>{
+    const data = snap.val();
+    const currentMachines = MACHINE_IDS.map((id, index) => {
+        const machineData = data && data[index]? data[index] : emptyMachine();
+        return {...machineData, machineId: id, index: index };
+    });
+
+    // Detekce změn pro animace
+    for (let i = 0; i < LIS_COUNT; i++) {
+        const current = currentMachines[i];
+        const old = lastMachines[i];
+
+        // Zkontrolujeme, jestli se data změnila (zakázka nebo nástroj)
+        const dataChanged = old && (current.orderNumber!== old.orderNumber || current.toolNumber!== old.toolNumber);
+
+        if (current.orderNumber && dataChanged) {
+            // Spustit blink pro kartu
+            const card = document.getElementById(`machine-${i}`);
+            if(card) {
+                card.classList.add("active");
+                setTimeout(()=>{
+                    card.classList.remove("active");
+                    card.classList.add("assigned");
+                },1200); // Necháme active déle, aby animace lépe vynikla
+            }
+        }
+    }
+
+    machines = currentMachines;
+    lastMachines = JSON.parse(JSON.stringify(currentMachines)); // Aktualizuje lastMachines
+    renderProductionScreen(); // Znovu vykreslí obrazovku
+    populateSetupMachineSelect(); // Aktualizujeme select v nastavení
+});
+
+// --- Renderovací funkce ---
+function renderProductionScreen(){
+    const screen = document.getElementById("productionScreen");
+    if(!screen) return;
+
+    screen.innerHTML = ""; // Vyčistíme obrazovku
+
+    machines.forEach((machine, index) => {
+        const assigned =!!machine.orderNumber; // Je přiřazeno, pokud je číslo zakázky
+        const cardHtml = `
+            <div class="machine-card ${assigned? 'assigned' : ''}" id="machine-${index}" onclick="openQrInputForm(${index})">
+                <div class="machine-id">${machine.machineId}</div>
+                <div class="order-number"><span>Číslo zakázky</span>${machine.orderNumber || "---"}</div>
+                <div class="tool-number"><span>Číslo nástroje</span>${machine.toolNumber || "---"}</div>
+            </div>
+        `;
+        screen.innerHTML += cardHtml;
+    });
+}
+
+function populateSetupMachineSelect() {
+    const select = document.getElementById("setupMachineSelect");
+    if (!select) return;
+
+    select.innerHTML = ""; // Vyčistíme options
+    MACHINE_IDS.forEach((id, index) => {
+        const option = document.createElement("option");
+        option.value = index;
+        option.textContent = id;
+        select.appendChild(option);
+    });
+
+    // Nastavíme listener pro změnu selectu
+    select.onchange = function() {
+        const selectedIndex = parseInt(this.value);
+        const selectedMachine = machines[selectedIndex];
+        document.getElementById("setupOrderNumber").value = selectedMachine.orderNumber;
+        document.getElementById("setupToolNumber").value = selectedMachine.toolNumber;
+    };
+
+    // Automaticky vybereme první stroj a načteme jeho data po naplnění selectu
+    if (MACHINE_IDS.length > 0) {
+        select.value = "0"; // Vybere první stroj
+        const firstMachine = machines[0];
+        document.getElementById("setupOrderNumber").value = firstMachine.orderNumber;
+        document.getElementById("setupToolNumber").value = firstMachine.toolNumber;
+    }
+}
+
+// --- Navigační funkce ---
+let currentActiveButton = null;
+function setActiveNavButton(modeFunction) {
+    if (currentActiveButton) {
+        currentActiveButton.classList.remove('active-nav');
+    }
+    const newActiveButton = document.querySelector(`.topbar button[onclick*="${modeFunction}"]`);
+    if (newActiveButton) {
+        newActiveButton.classList.add('active-nav');
+        currentActiveButton = newActiveButton;
+    }
+}
+
+window.productionMode = function(){
+    document.getElementById("productionScreen").style.display = "grid";
+    document.getElementById("requestsScreen").style.display = "none";
+    document.getElementById("setupScreen").style.display = "none";
+    setActiveNavButton("productionMode");
+}
+
+window.requestsMode = function(){
+    document.getElementById("productionScreen").style.display = "none";
+    document.getElementById("requestsScreen").style.display = "flex";
+    document.getElementById("setupScreen").style.display = "none";
+    setActiveNavButton("requestsMode");
+}
+
+window.setupMode = function(){
+    document.getElementById("productionScreen").style.display = "none";
+    document.getElementById("requestsScreen").style.display = "none";
+    document.getElementById("setupScreen").style.display = "block";
+    populateSetupMachineSelect(); // Zajistíme, že select je aktuální
+    setActiveNavButton("setupMode");
+}
+
+// --- Funkce pro nastavení (Setup Screen) ---
+window.submitSetup = async function() {
+    const selectedIndex = parseInt(document.getElementById("setupMachineSelect").value);
+    const orderNumber = document.getElementById("setupOrderNumber").value.trim();
+    const toolNumber = document.getElementById("setupToolNumber").value.trim();
+
+    if (!orderNumber ||!toolNumber) {
+        alert("Prosím vyplňte obě pole: Číslo zakázky a Číslo nástroje.");
+        return;
+    }
+
+    await set(ref(db, `machines/${selectedIndex}`), {
+        orderNumber: orderNumber,
+        toolNumber: toolNumber
+    });
+    alert(`Nastavení pro stroj ${MACHINE_IDS[selectedIndex]} uloženo!`);
+    // Po uložení můžeme přepnout zpět na výrobní obrazovku
+    productionMode();
+}
+
+// --- QR Skener a zadávání dat ---
+
+window.openQrScanner = async function() {
+    document.getElementById('qrScanDialog').style.display = 'flex';
+    const video = document.getElementById('qrVideo');
+
+    try {
+        qrStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        video.srcObject = qrStream;
+        video.setAttribute("playsinline", true); // pro iOS
+
+        Quagga.init({
+            inputStream: {
+                name: "Live",
+                type: "LiveStream",
+                target: video,
+                constraints: {
+                    facingMode: "environment"
+                }
+            },
+            decoder: {
+                readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", "i2of5_reader", "2of5_reader", "code_93_reader", "code_32_reader", "datamatrix_reader", "maxicode_reader", "qr_code_reader"] // Podpora více typů, QR je zahrnut
+            }
+        }, function(err) {
+            if (err) {
+                console.error("Chyba při inicializaci Quagga:", err);
+                alert("Nepodařilo se spustit skener QR/čárových kódů. Zkontrolujte oprávnění kamery.");
+                closeQrScanner();
+                return;
+            }
+            Quagga.start();
+        });
+
+        Quagga.onDetected(handleQrDetected);
+
+    } catch (err) {
+        console.error("Chyba při přístupu ke kameře:", err);
+        alert("Nepodařilo se získat přístup ke kameře. Zkontrolujte oprávnění.");
+        closeQrScanner();
+    }
+}
+
+function handleQrDetected(result) {
+    const code = result.codeResult.code;
+    console.log("Naskenován kód:", code);
+
+    // Najdeme index stroje podle naskenovaného kódu (předpokládáme, že QR obsahuje machineId)
+    const machineIndex = MACHINE_IDS.indexOf(code);
+
+    if (machineIndex!== -1) {
+        currentScannedMachineIndex = machineIndex;
+        closeQrScanner(); // Zavřít skener
+        openQrInputForm(machineIndex); // Otevřít formulář pro zadání
+    } else {
+        alert(`Naskenovaný kód "${code}" neodpovídá žádnému evidenčnímu číslu stroje.`);
+    }
+}
+
+window.closeQrScanner = function() {
+    document.getElementById('qrScanDialog').style.display = 'none';
+    if (qrStream) {
+        qrStream.getTracks().forEach(track => track.stop());
+        qrStream = null;
+    }
+    Quagga.stop();
+    Quagga.offDetected(handleQrDetected);
+}
+
+function openQrInputForm(machineIndex) {
+    document.getElementById('qrInputFormTitle').textContent = `Zadat parametry pro stroj ${MACHINE_IDS[machineIndex]}`;
+    // Předvyplníme, pokud už nějaká data jsou
+    document.getElementById('qrOrderNumber').value = machines[machineIndex].orderNumber || "";
+    document.getElementById('qrToolNumber').value = machines[machineIndex].toolNumber || "";
+    document.getElementById('qrInputForm').style.display = 'flex';
+}
+
+window.submitQrParams = async function() {
+    const orderNumber = document.getElementById('qrOrderNumber').value.trim();
+    const toolNumber = document.getElementById('qrToolNumber').value.trim();
+
+    if (!orderNumber ||!toolNumber) {
+        alert("Prosím vyplňte obě pole: Číslo zakázky a Číslo nástroje.");
+        return;
+    }
+
+    if (currentScannedMachineIndex!== -1) {
+        await set(ref(db, `machines/${currentScannedMachineIndex}`), {
+            orderNumber: orderNumber,
+            toolNumber: toolNumber
+        });
+        alert(`Parametry pro stroj ${MACHINE_IDS[currentScannedMachineIndex]} úspěšně zadány!`);
+    }
+
+    currentScannedMachineIndex = -1; // Reset indexu
+    document.getElementById('qrInputForm').style.display = 'none';
+    productionMode(); // Zpět na výrobní obrazovku
+}
+
+window.cancelQrParams = function() {
+    currentScannedMachineIndex = -1; // Reset indexu
+    document.getElementById('qrInputForm').style.display = 'none';
+    productionMode(); // Zpět na výrobní obrazovku
+}
+
+// --- Spuštění při načtení stránky ---
+window.addEventListener("load",()=>{
+    // Inicializujeme a zobrazíme výrobní obrazovku jako výchozí
+    productionMode();
+});
+
+</script>
+</body>
+</html>
