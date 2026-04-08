@@ -13,7 +13,7 @@ body{
     font-family: 'Segoe UI', Arial, sans-serif;
     background:url("background.png") center/cover fixed; /* Předpokládá se existující background.png */
     margin:0;
-    color:white;
+    color:white; /* Celý body bude mít defaultně bílé písmo */
     overflow-x: hidden;
     display: flex;
     flex-direction: column;
@@ -38,7 +38,7 @@ body::before{
     transition: all 0.3s ease;
 }
 .kemmsTop {
-    font-size: 38px;
+    font-size: 42px; /* Mírně zvětšeno */
     font-weight: 900;
     background: linear-gradient(45deg, #22c55e, #34d399);
     -webkit-background-clip: text;
@@ -115,13 +115,13 @@ body::before{
     gap: 20px;
     padding: 20px;
     flex-grow: 1; /* Zajistí, že zabere dostupný prostor */
-    /* Nové: Centrování obsahu, pokud není dostatek karet */
+    /* Centrování obsahu, pokud není dostatek karet */
     justify-content: center;
     align-content: center;
 }
 .machine-card {
     background: linear-gradient(145deg, #020617ee, #111827ee);
-    padding:30px; /* Trochu větší padding */
+    padding:35px; /* Ještě větší padding */
     border-radius:22px;
     text-align:center;
     transition: all.4s ease-out;
@@ -132,12 +132,12 @@ body::before{
     display: flex; /* Pro flexbox uspořádání obsahu */
     flex-direction: column; /* Položky pod sebou */
     justify-content: center; /* Vertikálně vycentrovat */
-    min-height: 250px; /* Minimální výška karty pro lepší vzhled na TV */
+    min-height: 280px; /* Ještě větší minimální výška karty */
 }
 /* Stroj je "assigned" (má zakázku/nástroj) */
 .machine-card.assigned{
     background: linear-gradient(145deg, #166534cc, #1a9a4ecc); /* Zelenější, ale stále průhledný gradient */
-    color: #e0ffe0; /* Světle zelený text, aby vynikl */
+    color: white; /* Bílý text pro Assigned */
     box-shadow: 0 0 30px rgba(34, 197, 94, 0.7), inset 0 0 15px rgba(34, 197, 94, 0.5);
     border-color: #22c55e;
     animation: pulseBorder 2s infinite ease-in-out;
@@ -150,7 +150,7 @@ body::before{
 /* Stroj je "active" (právě se mu přiřadila zakázka) */
 .machine-card.active{
     background: linear-gradient(145deg, #22c55e, #1a9a4e);
-    color: #000;
+    color: white; /* Bílý text pro Active */
     box-shadow: 0 0 80px rgba(34, 197, 94, 0.9), 0 0 30px rgba(255,255,255,0.6);
     transform: scale(1.08);
     border-color: #22c55e;
@@ -163,57 +163,56 @@ body::before{
 }
 
 .machine-id {
-    font-size: 56px; /* Větší pro TV */
+    font-size: 72px; /* Zvětšeno na 72px */
     font-weight: 900;
-    background: linear-gradient(45deg, #6ee7b7, #34d399);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 6px 6px 12px rgba(0,0,0,0.8), 8px 8px 16px rgba(0,0,0,0.7);
-    margin-bottom: 30px; /* Více místa */
+    color: white; /* BÍLÁ BARVA */
+    text-shadow: 6px 6px 12px rgba(0,0,0,0.8), 8px 8px 16px rgba(0,0,0,0.7); /* Výrazný stín pro kontrast */
+    margin-bottom: 35px; /* Více místa */
     line-height: 1.2;
 }
 
 /* Styly pro číslo zakázky a nástroje */
 .order-number,.tool-number {
-    font-size: 44px; /* Větší pro TV */
-    color: #22d3ee; /* Modrá, kontrastní barva */
-    margin-top: 20px; /* Oddělení */
+    font-size: 52px; /* Ještě větší pro maximální viditelnost */
+    color: white; /* Písmo bílé */
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.7); /* Bílý text s tmavým stínem pro kontrast */
+    margin-top: 25px; /* Oddělení */
     font-weight: 800;
-    display: flex; /* Flexbox pro zarovnání popisku a čísla */
-    flex-direction: column; /* Popisek nad číslem */
-    align-items: center; /* Centrování obsahu */
-    line-height: 1.2; /* Větší mezera mezi řádky */
-    padding: 8px 0; /* Vertikální padding pro pulzující efekt */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.2;
+    padding: 8px 0;
 }
 .order-number span,.tool-number span {
-    font-size: 0.5em; /* Menší popisek */
+    font-size: 0.45em; /* Menší popisek */
     color: #a3e635; /* Zelená pro popisky */
     font-weight: normal;
     display: block;
-    margin-bottom: 5px; /* Mezera mezi popiskem a číslem */
-    opacity: 0.8; /* Jemnější popisek */
+    margin-bottom: 8px; /* Více mezery mezi popiskem a číslem */
+    opacity: 0.8;
 }
 
 /* ANIMACE PRO PULZOVÁNÍ TEXTU ZAKÁZKY/NÁSTROJE PŘI ASSIGNED STAVU */
 @keyframes textPulse {
     0% {
         transform: scale(1);
-        color: #22d3ee;
-        text-shadow: 0 0 5px rgba(34, 211, 238, 0.5);
+        color: white;
+        text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
     }
     50% {
         transform: scale(1.03); /* Lehké zvětšení */
-        color: #e0ffff; /* Světlejší modrá */
-        text-shadow: 0 0 15px rgba(34, 211, 238, 0.8), 0 0 8px rgba(255, 255, 255, 0.5); /* Výraznější záře */
+        color: #e0ffff; /* Světlejší bílá */
+        text-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 8px rgba(255, 255, 255, 0.5); /* Výraznější bílá záře */
     }
     100% {
         transform: scale(1);
-        color: #22d3ee;
-        text-shadow: 0 0 5px rgba(34, 211, 238, 0.5);
+        color: white;
+        text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
     }
 }
-.machine-card.assigned.order-number,
-.machine-card.assigned.tool-number {
+.machine-card.assigned.order-number, /* Opravený selektor pro správnou barvu */
+.machine-card.assigned.tool-number { /* Opravený selektor pro správnou barvu */
     animation: textPulse 2s infinite alternate ease-in-out;
 }
 
@@ -274,6 +273,18 @@ body::before{
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(59, 130, 246, 0.6);
 }
+/* Nové styly pro sekci prezentace v nastavení */
+#setupScreen.presentation-settings { /* Opravený selektor */
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(34, 197, 94, 0.3);
+}
+#setupScreen.presentation-settings h4 { /* Opravený selektor */
+    color: #a3e635;
+    margin-bottom: 15px;
+    font-size: 1.5em;
+    text-align: center;
+}
 
 /* --- Requests Screen (zadání přes QR) --- */
 #requestsScreen {
@@ -332,7 +343,7 @@ body::before{
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(34, 197, 94, 0.7);
 }
-.qr-scan-dialog.close-button {
+.qr-scan-dialog.close-button { /* Opravený selektor */
     margin-top: 30px;
     padding: 12px 25px;
     background: linear-gradient(135deg, #ef4444, #dc2626);
@@ -344,7 +355,7 @@ body::before{
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
 }
-.qr-scan-dialog.close-button:hover {
+.qr-scan-dialog.close-button:hover { /* Opravený selektor */
     transform: translateY(-3px) scale(1.02);
     box-shadow: 0 8px 25px rgba(239, 68, 68, 0.6);
 }
@@ -397,7 +408,7 @@ body::before{
     font-size: 1.2em;
     box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
 }
-.qr-input-form.submit-button,.qr-input-form.cancel-button {
+.qr-input-form.submit-button,.qr-input-form.cancel-button { /* Opravený selektor */
     width: calc(50% - 10px);
     padding: 14px;
     border: none;
@@ -409,29 +420,56 @@ body::before{
     transition: all 0.3s ease;
     margin: 0 5px;
 }
-.qr-input-form.submit-button {
+.qr-input-form.submit-button { /* Opravený selektor */
     background: linear-gradient(90deg, #3b82f6, #60a5fa);
     box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
 }
-.qr-input-form.submit-button:hover {
+.qr-input-form.submit-button:hover { /* Opravený selektor */
     background: linear-gradient(90deg, #60a5fa, #3b82f6);
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(59, 130, 246, 0.6);
 }
-.qr-input-form.cancel-button {
+.qr-input-form.cancel-button { /* Opravený selektor */
     background: linear-gradient(90deg, #ef4444, #dc2626);
     box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
 }
-.qr-input-form.cancel-button:hover {
+.qr-input-form.cancel-button:hover { /* Opravený selektor */
     background: linear-gradient(90deg, #dc2626, #ef4444);
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(239, 68, 68, 0.6);
 }
 
+/* --- Sekce pro prezentaci --- */
+#presentationScreen {
+    display: none; /* Skryté ve výchozím stavu */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: black; /* Černé pozadí pod prezentací */
+    z-index: 999; /* Pod QR skenerem a dialogy */
+    overflow: hidden; /* Důležité pro iframe */
+}
+#presentationFrame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background-color: black; /* Aby se nenačítala pozadí stránky */
+}
+
 /* --- Media Queries pro menší obrazovky --- */
+@media (max-width: 1400px) { /* Nový breakpoint pro mírně menší TV/monitory */
+.machine-id { font-size: 64px; margin-bottom: 30px;}
+.order-number,.tool-number { font-size: 46px; margin-top: 20px;}
+.machine-card { min-height: 260px; padding: 30px;}
+}
 @media (max-width: 1200px) { /* Pro menší TV nebo velké monitory */
-   .machine-id { font-size: 48px; margin-bottom: 25px;}
-   .order-number,.tool-number { font-size: 38px; margin-top: 15px;}
+.machine-id { font-size: 58px; margin-bottom: 25px;}
+.order-number,.tool-number { font-size: 40px; margin-top: 15px;}
+.machine-card { min-height: 240px; padding: 25px;}
+.kemmsTop { font-size: 38px;}
+.topbar button { font-size: 1.0em;}
 }
 @media (max-width: 992px) { /* Tablet landscape */
     #productionScreen {
@@ -439,11 +477,11 @@ body::before{
         gap: 15px;
         padding: 15px;
     }
-   .machine-card { min-height: 200px; padding: 25px;}
-   .machine-id { font-size: 38px; margin-bottom: 20px;}
-   .order-number,.tool-number { font-size: 30px; margin-top: 10px;}
-   .topbar button { padding: 10px 18px; font-size: 1em; margin-left: 8px;}
-   .kemmsTop { font-size: 32px;}
+.machine-card { min-height: 200px; padding: 20px;}
+.machine-id { font-size: 48px; margin-bottom: 20px;}
+.order-number,.tool-number { font-size: 34px; margin-top: 10px;}
+.topbar button { padding: 10px 18px; font-size: 0.9em; margin-left: 8px;}
+.kemmsTop { font-size: 32px;}
 }
 @media (max-width: 768px) { /* Tablet portrait */
     #productionScreen {
@@ -451,20 +489,20 @@ body::before{
         gap: 10px;
         padding: 10px;
     }
-   .machine-card { min-height: 180px; padding: 20px;}
-   .machine-id { font-size: 32px; margin-bottom: 15px;}
-   .order-number,.tool-number { font-size: 26px; margin-top: 8px;}
-   .topbarContainer { flex-direction: column; align-items: flex-start; padding: 10px;}
-   .topbar { margin-top: 10px; width: 100%; display: flex; justify-content: space-around;}
-   .topbar button { flex-grow: 1; margin: 0 2px;}
+.machine-card { min-height: 160px; padding: 15px;}
+.machine-id { font-size: 40px; margin-bottom: 15px;}
+.order-number,.tool-number { font-size: 28px; margin-top: 8px;}
+.topbarContainer { flex-direction: column; align-items: flex-start; padding: 10px;}
+.topbar { margin-top: 10px; width: 100%; display: flex; justify-content: space-around;}
+.topbar button { flex-grow: 1; margin: 0 2px;}
     #setupScreen { padding: 20px; max-width: 95%;}
 }
 @media (max-width: 480px) { /* Mobil */
-   .kemmsTop { font-size: 24px;}
-   .topbar button { padding: 8px 10px; font-size: 0.8em;}
-   .machine-id { font-size: 28px;}
-   .order-number,.tool-number { font-size: 22px;}
-   .machine-card { padding: 15px;}
+.kemmsTop { font-size: 28px;}
+.topbar button { padding: 8px 10px; font-size: 0.75em;}
+.machine-id { font-size: 36px;}
+.order-number,.tool-number { font-size: 24px;}
+.machine-card { padding: 10px; min-height: 140px;}
     #requestsScreen > div { padding: 20px;}
 }
 
@@ -509,6 +547,21 @@ body::before{
     <input id="setupToolNumber" placeholder="Zadejte číslo nástroje">
 
     <button onclick="submitSetup()">Uložit nastavení</button>
+
+    <!-- NOVÁ SEKCE PRO NASTAVENÍ PREZENTACE -->
+    <div class="presentation-settings">
+        <h4>Nastavení prezentace</h4>
+        <label for="presentationUrl">URL prezentace (HTML/PDF/webová stránka):</label>
+        <input id="presentationUrl" placeholder="https://example.com/moje-prezentace.html">
+
+        <label for="displayInterval">Interval zobrazení (sekundy):</label>
+        <input type="number" id="displayInterval" value="300" min="10" step="10"> <!-- Výchozí 5 min -->
+
+        <button onclick="savePresentationSettings()">Uložit nastavení prezentace</button>
+        <button onclick="startPresentationRotation()" style="background: linear-gradient(90deg, #f6b73b, #fabf60); margin-top: 10px;">Spustit automatické přepínání</button>
+        <button onclick="stopPresentationRotation()" style="background: linear-gradient(90deg, #ef4444, #dc2626); margin-top: 10px;">Zastavit automatické přepínání</button>
+    </div>
+
 </div>
 
 <!-- QR KÓD SCANNER DIALOG -->
@@ -532,6 +585,11 @@ body::before{
     </div>
 </div>
 
+<!-- NOVÁ SEKCE PRO ZOBRAZENÍ PREZENTACE -->
+<div id="presentationScreen">
+    <iframe id="presentationFrame" src="" allowfullscreen></iframe>
+</div>
+
 <script type="module">
 // Firebase importy
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
@@ -548,7 +606,8 @@ const app=initializeApp(firebaseConfig);
 const db=getDatabase(app);
 
 // Seznam evidenčních čísel strojů
-const MACHINE_IDS = ["5-13", "5-15", "5-16", "5-17", "5-18", "5-19", "5-22", "5-21", "5-24"];
+// Změněno: 5-22 -> 5-20, 5-24 -> 5-26
+const MACHINE_IDS = ["5-13", "5-15", "5-16", "5-17", "5-18", "5-19", "5-20", "5-21", "5-26"];
 const LIS_COUNT = MACHINE_IDS.length; // Počet strojů = počet evidenčních čísel
 
 let machines = []; // Pole pro data strojů
@@ -556,6 +615,12 @@ let lastMachines = []; // Pro detekci změn a animací
 
 let qrStream = null; // Stream pro QR skener
 let currentScannedMachineIndex = -1; // Index stroje, pro který se zadávají parametry po skenování
+
+// Proměnné pro automatické přepínání obrazovek
+let rotationInterval = null;
+let currentRotationScreen = 'production'; // 'production' nebo 'presentation'
+let presentationUrl = '';
+let displayInterval = 300; // Výchozí interval 300 sekund (5 minut)
 
 // Funkce pro prázdná data stroje
 function emptyMachine() { return { orderNumber: "", toolNumber: "" }; }
@@ -593,6 +658,27 @@ onValue(ref(db,'machines'), snap=>{
     lastMachines = JSON.parse(JSON.stringify(currentMachines)); // Aktualizuje lastMachines
     renderProductionScreen(); // Znovu vykreslí obrazovku
     populateSetupMachineSelect(); // Aktualizujeme select v nastavení
+});
+
+// Listener pro nastavení prezentace
+onValue(ref(db, 'settings/presentation'), snap => {
+    const settings = snap.val();
+    if (settings) {
+        presentationUrl = settings.url || '';
+        displayInterval = settings.interval || 300;
+
+        // Aktualizovat pole v nastavení
+        const urlInput = document.getElementById('presentationUrl');
+        const intervalInput = document.getElementById('displayInterval');
+        if (urlInput) urlInput.value = presentationUrl;
+        if (intervalInput) intervalInput.value = displayInterval;
+
+        // Pokud je rotace aktivní a změnila se nastavení, restartujeme interval
+        if (rotationInterval) {
+            stopPresentationRotation();
+            startPresentationRotation();
+        }
+    }
 });
 
 // --- Renderovací funkce ---
@@ -657,26 +743,36 @@ function setActiveNavButton(modeFunction) {
     }
 }
 
-window.productionMode = function(){
-    document.getElementById("productionScreen").style.display = "grid";
+function hideAllScreens() {
+    document.getElementById("productionScreen").style.display = "none";
     document.getElementById("requestsScreen").style.display = "none";
     document.getElementById("setupScreen").style.display = "none";
+    document.getElementById("presentationScreen").style.display = "none"; // Nově přidáno
+}
+
+window.productionMode = function(){
+    hideAllScreens();
+    document.getElementById("productionScreen").style.display = "grid";
     setActiveNavButton("productionMode");
+    currentRotationScreen = 'production'; // Reset rotace
+    if (rotationInterval) stopPresentationRotation(); // Zastaví rotaci, pokud uživatel ručně přepne
 }
 
 window.requestsMode = function(){
-    document.getElementById("productionScreen").style.display = "none";
+    hideAllScreens();
     document.getElementById("requestsScreen").style.display = "flex";
-    document.getElementById("setupScreen").style.display = "none";
     setActiveNavButton("requestsMode");
+    currentRotationScreen = 'production'; // Reset rotace
+    if (rotationInterval) stopPresentationRotation(); // Zastaví rotaci
 }
 
 window.setupMode = function(){
-    document.getElementById("productionScreen").style.display = "none";
-    document.getElementById("requestsScreen").style.display = "none";
+    hideAllScreens();
     document.getElementById("setupScreen").style.display = "block";
     populateSetupMachineSelect(); // Zajistíme, že select je aktuální
     setActiveNavButton("setupMode");
+    currentRotationScreen = 'production'; // Reset rotace
+    if (rotationInterval) stopPresentationRotation(); // Zastaví rotaci
 }
 
 // --- Funkce pro nastavení (Setup Screen) ---
@@ -695,12 +791,85 @@ window.submitSetup = async function() {
         toolNumber: toolNumber
     });
     alert(`Nastavení pro stroj ${MACHINE_IDS[selectedIndex]} uloženo!`);
-    // Po uložení můžeme přepnout zpět na výrobní obrazovku
-    productionMode();
+    productionMode(); // Po uložení můžeme přepnout zpět na výrobní obrazovku
+}
+
+// --- Nové funkce pro nastavení prezentace ---
+window.savePresentationSettings = async function() {
+    const url = document.getElementById('presentationUrl').value.trim();
+    const interval = parseInt(document.getElementById('displayInterval').value);
+
+    if (!url) {
+        alert("Prosím zadejte URL prezentace.");
+        return;
+    }
+    if (isNaN(interval) || interval < 10) {
+        alert("Interval zobrazení musí být číslo větší nebo rovno 10 sekundám.");
+        return;
+    }
+
+    await set(ref(db, 'settings/presentation'), {
+        url: url,
+        interval: interval
+    });
+    alert("Nastavení prezentace uloženo!");
+}
+
+function showProductionScreen() {
+    hideAllScreens();
+    document.getElementById("productionScreen").style.display = "grid";
+    document.getElementById("presentationFrame").src = ""; // Vyčistíme iframe
+    currentRotationScreen = 'production';
+}
+
+function showPresentationScreen() {
+    if (!presentationUrl) {
+        console.warn("URL prezentace není nastavena, nelze zobrazit prezentaci.");
+        showProductionScreen(); // Zůstane na výrobní obrazovce, pokud není URL
+        return;
+    }
+    hideAllScreens();
+    document.getElementById("presentationScreen").style.display = "block";
+    document.getElementById("presentationFrame").src = presentationUrl;
+    currentRotationScreen = 'presentation';
+}
+
+function toggleRotationScreen() {
+    if (currentRotationScreen === 'production') {
+        showPresentationScreen();
+    } else {
+        showProductionScreen();
+    }
+}
+
+window.startPresentationRotation = function() {
+    if (rotationInterval) {
+        stopPresentationRotation();
+    }
+    if (!presentationUrl) {
+        alert("Pro spuštění automatického přepínání je nutné nastavit URL prezentace.");
+        return;
+    }
+
+    // Interval je v sekundách, setInterval očekává milisekundy
+    rotationInterval = setInterval(toggleRotationScreen, displayInterval * 1000);
+    alert(`Automatické přepínání spuštěno. Interval: ${displayInterval} sekund.`);
+
+    // Nastavíme, aby se po spuštění intervalu zobrazila výrobní obrazovka
+    showProductionScreen();
+}
+
+window.stopPresentationRotation = function() {
+    if (rotationInterval) {
+        clearInterval(rotationInterval);
+        rotationInterval = null;
+        alert("Automatické přepínání zastaveno.");
+    }
+    // Po zastavení rotace se vždy vrátíme na výrobní obrazovku
+    showProductionScreen();
 }
 
 // --- QR Skener a zadávání dat ---
-
 window.openQrScanner = async function() {
     document.getElementById('qrScanDialog').style.display = 'flex';
     const video = document.getElementById('qrVideo');
