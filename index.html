@@ -32,7 +32,7 @@
         .overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.7); /* Zatmavení pozadí na 70% */
+            background: rgba(0, 0, 0, 0.7);
             z-index: -5;
         }
 
@@ -60,47 +60,55 @@
         .carousel-container { height: 100%; display: flex; align-items: center; overflow: hidden; }
         .carousel-track {
             display: flex; 
-            gap: 75px; /* Zvětšeno z 60px o čtvrtinu */
+            gap: 75px;
             padding: 0 100px;
             animation: scroll-track 45s linear infinite; 
             width: max-content;
         }
         @keyframes scroll-track { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
-        /* --- ZVĚTŠENÁ KARTA STROJE (O ČTVRTINU) --- */
         .machine-card {
-            min-width: 562px; /* Původně 450px + 25% */
-            height: 687px;    /* Původně 550px + 25% */
+            min-width: 562px;
+            height: 687px;    
             background: var(--card-bg);
             border-radius: 50px; 
             border: 2px solid rgba(255,255,255,0.2);
-            padding: 50px; /* Zvětšený vnitřní okraj */
-            display: flex; flex-direction: column; justify-content: space-around;
+            padding: 40px 50px; 
+            display: flex; flex-direction: column; justify-content: space-between;
             backdrop-filter: blur(15px);
             box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+            position: relative;
         }
         .machine-card.assigned { border-color: var(--neon-green); box-shadow: 0 0 35px rgba(34, 197, 94, 0.3); }
 
         .machine-id { 
-            font-size: 125px; /* Původně 100px + 25% */
+            font-size: 125px;
             text-align: center; color: var(--neon-green); font-weight: 900; margin: 0; 
         }
         
         .data-row {
-            background: rgba(0,0,0,0.5); padding: 31px; /* Původně 25px + 25% */
+            background: rgba(0,0,0,0.5); padding: 25px 31px; 
             border-radius: 20px;
             border-left: 7px solid var(--neon-green);
         }
         .data-row.blue { border-left-color: var(--neon-blue); }
         .label { font-size: 15px; color: var(--neon-green); letter-spacing: 2px; }
-        .value { font-size: 47px; font-weight: bold; color: white; } /* Původně 38px + 25% */
+        .value { font-size: 47px; font-weight: bold; color: white; }
 
-        /* --- OBRÁZKY NA CELÝ DISPLEJ --- */
+        /* --- ÚPRAVA: Styl pro zobrazení času --- */
+        .timestamp {
+            font-size: 32px;
+            color: rgba(255, 255, 255, 0.5);
+            text-align: right;
+            margin-top: -10px;
+            font-style: italic;
+        }
+
         #imageViewport { width: 100vw; height: 100vh; background: black; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .doc-image { 
             width: 100vw; height: 100vh;
             display: none; 
-            object-fit: contain; /* Obrázek bude maximální možný bez ořezu */
+            object-fit: contain; 
             animation: fadeIn 0.8s ease-in-out;
         }
         .doc-image.visible { display: block; }
@@ -188,8 +196,6 @@
         let sec = 0;
         const LIMIT = 90; 
         let rotActive = true;
-        
-        // --- LOGIKA STŘÍDÁNÍ 4 OBRÁZKŮ ---
         let currentImgIndex = 1;
         const totalImages = 4;
         const intervalObrázků = 10; 
@@ -202,10 +208,8 @@
                     imgTimer = 0;
                     const oldImg = document.getElementById(`img${currentImgIndex}`);
                     if(oldImg) oldImg.classList.remove("visible");
-                    
                     currentImgIndex++;
                     if(currentImgIndex > totalImages) currentImgIndex = 1;
-                    
                     const newImg = document.getElementById(`img${currentImgIndex}`);
                     if(newImg) newImg.classList.add("visible");
                 }
@@ -215,7 +219,8 @@
         onValue(ref(db, 'machines'), snap => {
             const data = snap.val();
             machines = MACHINE_IDS.map((id, i) => ({
-                ...(data && data[i] ? data[i] : { orderNumber: "", toolNumber: "" }), id, i
+                // ÚPRAVA: Přidáno pole 'lastUpdate' do objektu stroje
+                ...(data && data[i] ? data[i] : { orderNumber: "", toolNumber: "", lastUpdate: "" }), id, i
             }));
             render();
             document.getElementById("mSelect").innerHTML = MACHINE_IDS.map((id, i) => `<option value="${i}">${id}</option>`).join('');
@@ -228,6 +233,7 @@
                     <h1 class="machine-id">${m.id}</h1>
                     <div class="data-row"><div class="label">ZAKÁZKA</div><div class="value">${m.orderNumber || '---'}</div></div>
                     <div class="data-row blue"><div class="label">NÁSTROJ</div><div class="value">${m.toolNumber || '---'}</div></div>
+                    <div class="timestamp">${m.lastUpdate ? 'Zadáno: ' + m.lastUpdate : ''}</div>
                 </div>
             `).join('');
             track.innerHTML = html + html;
@@ -241,9 +247,18 @@
         };
         window.openManualInput = () => document.getElementById("dataModal").style.display = "flex";
         window.closeDataModal = () => document.getElementById("dataModal").style.display = "none";
+        
+        // ÚPRAVA: Funkce saveData nyní ukládá i aktuální čas
         window.saveData = async () => {
             const i = document.getElementById("mSelect").value;
-            await set(ref(db, `machines/${i}`), { orderNumber: document.getElementById("oIn").value, toolNumber: document.getElementById("tIn").value });
+            const now = new Date();
+            const timeString = now.toLocaleDateString('cs-CZ') + " " + now.toLocaleTimeString('cs-CZ', {hour: '2-digit', minute:'2-digit'});
+            
+            await set(ref(db, `machines/${i}`), { 
+                orderNumber: document.getElementById("oIn").value, 
+                toolNumber: document.getElementById("tIn").value,
+                lastUpdate: timeString // Uložení času
+            });
             closeDataModal();
         };
 
@@ -268,14 +283,8 @@
         function switchScreen() {
             const prod = document.getElementById("productionScreen");
             const pres = document.getElementById("presentationScreen");
-            if(prod.classList.contains("active")) { 
-                prod.classList.remove("active"); 
-                pres.classList.add("active"); 
-            }
-            else { 
-                pres.classList.remove("active"); 
-                prod.classList.add("active"); 
-            }
+            if(prod.classList.contains("active")) { prod.classList.remove("active"); pres.classList.add("active"); }
+            else { pres.classList.remove("active"); prod.classList.add("active"); }
         }
 
         window.openQrScanner = () => {
