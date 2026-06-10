@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>KemmSoft Výroba</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+    :root { --primary: #0055A4; --bg: #F1F5F9; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); }
+    .input { width: 100%; padding: 14px 16px; border: 2px solid #E2E8F0; border-radius: 16px; font-size: 18px; font-weight: 600; background: white; }
+    .input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(0,85,164,0.1); }
+    label { font-size: 14px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
+    .btn { width: 100%; padding: 18px; border-radius: 16px; font-size: 20px; font-weight: 800; background: var(--primary); color: white; border: none; }
+    .btn:active { transform: scale(0.98); }
+    .glass-card { background: rgba(255, 255, 255, 0.98); border-radius: 2rem; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.05); }
+    .tab-active { background: var(--primary); color: white !important; }
+    .admin-view { display: none; }
+    .admin-view.show { display: block; }
+    .operator-view.hide { display: none; }
+    .eff-badge { padding: 4px 8px; border-radius: 6px; font-weight: 800; font-size: 11px; }
+    .eff-good { background: #DCFCE7; color: #166534; }
+    .eff-bad { background: #FEE2E2; color: #991B1B; }
+    .eff-ok { background: #FEF3C7; color: #92400E; }
+    .admin-tab-content { display: none; }
+    .admin-tab-content.active { display: block; }
+</style>
+</head>
+<body class="p-4">
+    <div class="max-w-7xl mx-auto">
+        <div id="operatorView" class="operator-view max-w-md mx-auto">
+            <div class="bg-white rounded-3xl p-6 shadow-xl relative">
+                <button id="adminLoginBtn" class="absolute top-4 right-4 px-3 py-1.5 bg-slate-900 text-white rounded-lg text-xs font-bold">
+                    <i class="fa-solid fa-lock"></i> Admin
+                </button>
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-blue-600 rounded-2xl mx-auto mb-3 flex items-center justify-center">
+                        <i class="fa-solid fa-clipboard-list text-white text-2xl"></i>
+                    </div>
+                    <h1 class="text-2xl font-800 text-slate-900">Zápis výroby</h1>
+                </div>
+                <form id="form" class="space-y-4">
+                    <div><label>Jméno</label><input type="text" id="jmeno" class="input" required></div>
+                    <div>
+                        <label>Zakázka</label>
+                        <input type="text" id="zakazka" class="input" placeholder="Napište nebo vyberte zakázku" list="zakazkyList" autocomplete="off" required>
+                        <datalist id="zakazkyList">
+                            </datalist>
+                    </div>
+                    <div><label>Operace</label><select id="operace" class="input" required><option value="">Vyber</option><option value="c08">c08 - protahování</option><option value="b02">b02 - krimpování</option><option value="b06">b06 - krimpování</option><option value="c11">c11 - zafoukávání</option><option value="c07">c07 - osazování</option><option value="c05">c05 - píjení</option><option value="d02">d02 - el. test</option><option value="c15">c15 - kompletace</option><option value="c12">c12 - omotávání lepicí páskou</option></select></div>
+                    <div class="grid grid-cols-2 gap-3"><div><label>Čas od</label><input type="time" id="casOd" class="input" required></div><div><label>Čas do</label><input type="time" id="casDo" class="input" required></div></div>
+                    <div class="grid grid-cols-2 gap-3"><div><label>Kusy OK</label><input type="number" id="kusyOk" class="input" min="0" required></div><div><label>Kusy NOK</label><input type="number" id="kusyNok" class="input" min="0" required></div></div>
+                    <button type="submit" class="btn mt-6"><i class="fa-solid fa-floppy-disk mr-2"></i>ULOŽIT</button>
+                </form>
+                <div id="msg" class="hidden mt-4 p-4 rounded-2xl text-center font-bold"></div>
+            </div>
+        </div>
+
+        <div id="adminView" class="admin-view">
+            <header class="bg-white/90 backdrop-blur-md border-b sticky top-0 z-50 mb-6 -mx-4 px-4">
+                <div class="max-w-7xl mx-auto py-3 flex justify-between items-center">
+                    <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-600 to-blue-800"><i class="fa-solid fa-shield-halved text-white"></i></div><h1 class="text-lg font-800">Admin Panel</h1></div>
+                    <button id="logoutBtn" class="px-4 py-2 rounded-xl bg-red-600 text-white font-bold text-sm"><i class="fa-solid fa-right-from-bracket"></i> Odhlásit</button>
+                </div>
+            </header>
+            <div class="glass-card p-2 mb-6">
+                <div class="grid grid-cols-6 gap-2">
+                    <button class="admin-tab p-2 font-800 text-[11px] uppercase rounded-xl tab-active" data-tab="karta">Karta operátora</button>
+                    <button class="admin-tab p-2 font-800 text-[11px] uppercase rounded-xl text-slate-400" data-tab="vyroby">Výroby</button>
+                    <button class="admin-tab p-2 font-800 text-[11px] uppercase rounded-xl text-slate-400" data-tab="normy">Normy</button>
+                    <button class="admin-tab p-2 font-800 text-[11px] uppercase rounded-xl text-slate-400" data-tab="vytvorit">Vytvoření zakázek</button>
+                    <button class="admin-tab p-2 font-800 text-[11px] uppercase rounded-xl text-slate-400" data-tab="vsechny">Všechny záznamy</button>
+                    <button class="admin-tab p-2 font-800 text-[11px] uppercase rounded-xl text-slate-400" data-tab="export">Export</button>
+                </div>
+            </div>
+            <div id="tab-karta" class="admin-tab-content active"><div class="glass-card p-6"><h2 class="text-2xl font-800 mb-4">Karta operátora + Efektivita</h2><select id="selectOperator" class="w-full p-3 border-2 border-slate-200 rounded-xl font-bold mb-4"><option value="">Vyber operátora</option></select><div id="kartaData" class="text-slate-500">Vyber operátora</div></div></div>
+            <div id="tab-vyroby" class="admin-tab-content"><div class="glass-card p-6"><h2 class="text-2xl font-800 mb-4">Efektivita výrob</h2><input type="text" id="filtrVyroba" class="input mb-4" placeholder="Filtrovat zakázku..."><div id="vyrobyKarty" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4"></div></div></div>
+            <div id="tab-normy" class="admin-tab-content"><div class="glass-card p-6"><h2 class="text-2xl font-800 mb-4">Normy výkonu</h2><div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="bg-slate-900 text-white"><th class="py-3 px-3 text-left">Výroba</th><th class="py-3 px-3">Postup</th><th class="py-3 px-3">Operace</th><th class="py-3 px-3 text-right">Norma ks/h</th><th class="py-3 px-3">Popis</th></tr></thead><tbody id="normyTable"></tbody></table></div></div></div>
+            
+            <div id="tab-vytvorit" class="admin-tab-content">
+                <div class="glass-card p-6">
+                    <h2 class="text-2xl font-800 mb-4">Vytvoření nové zakázky a norem</h2>
+                    <form id="createOrderForm" class="space-y-4 max-w-xl">
+                        <div>
+                            <label>Číslo nové zakázky</label>
+                            <input type="text" id="newOrderInput" class="input" placeholder="Např. 10080000" required>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                            <h3 class="font-800 text-sm text-slate-700 uppercase tracking-wide mb-3">Nastavit normy pro operace (ks/h)</h3>
+                            <div class="grid grid-cols-2 gap-3" id="newOrderNormsContainer">
+                                </div>
+                        </div>
+                        <button type="submit" class="btn"><i class="fa-solid fa-plus mr-2"></i>VYTVOŘIT ZAKÁZKU</button>
+                    </form>
+                    <div id="createMsg" class="hidden mt-4 p-4 rounded-2xl text-center font-bold"></div>
+                </div>
+            </div>
+
+            <div id="tab-vsechny" class="admin-tab-content"><div class="glass-card p-6"><h2 class="text-2xl font-800 mb-4">Všechny záznamy + Efektivita</h2><div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="bg-slate-900 text-white"><th class="py-2 px-2">Datum</th><th class="py-2 px-2">Jméno</th><th class="py-2 px-2">Zakázka</th><th class="py-2 px-2">Operace</th><th class="py-2 px-2">Čas</th><th class="py-2 px-2">OK</th><th class="py-2 px-2">NOK</th><th class="py-2 px-2">ks/h</th><th class="py-2 px-2">Norma</th><th class="py-2 px-2">Efektivita</th></tr></thead><tbody id="recordsTable"></tbody></table></div></div></div>
+            <div id="tab-export" class="admin-tab-content"><div class="glass-card p-12 text-center"><i class="fa-solid fa-file-excel text-6xl text-green-600 mb-4"></i><h2 class="text-2xl font-800 mb-2">Export dat</h2><p class="text-slate-500 mb-6">Stáhni všechny záznamy s efektivitou do Excelu</p><button id="exportBtn" class="px-8 py-4 bg-green-600 text-white rounded-xl font-800 text-lg"><i class="fa-solid fa-download mr-2"></i>Stáhnout XLSX</button></div></div>
+        </div>
+    </div>
+
+    <div id="loginModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full"><h2 class="text-2xl font-800 mb-4 text-center">Admin přihlášení</h2><input type="password" id="adminPass" class="input mb-4" placeholder="Heslo"><div class="grid grid-cols-2 gap-3"><button id="loginCancel" class="py-3 rounded-xl bg-slate-200 font-bold">Zrušit</button><button id="loginSubmit" class="py-3 rounded-xl bg-blue-600 text-white font-bold">Přihlásit</button></div><p id="loginError" class="hidden text-red-600 text-sm mt-3 text-center font-bold">Špatné heslo</p></div>
+    </div>
+
+<script>
+const DEFAULT_NORMY_MAP = {"10071766": {"c08": 58, "c11": 200, "c07": 35, "b06": 60, "c15": 38, "c12": 32, "d02": 26}, "10072795": {"c08": 61, "c11": 117, "c07": 29, "b06": 60, "c15": 44, "c12": 34, "d02": 23}, "10021113": {"c08": 58, "c11": 48, "c07": 35, "b06": 60, "c15": 38, "c12": 32, "d02": 33}, "10069087": {"c08": 58, "c11": 48, "c07": 35, "b06": 60, "c15": 38, "c12": 32, "d02": 33}, "10061929": {"c08": 58, "c11": 48, "c07": 35, "b06": 60, "c15": 38, "c12": 32, "d02": 33}, "10079659": {"c07": 79, "c08": 47, "c11": 45, "c12": 50, "d02": 90}, "10075703": {"c08": 58, "c11": 200, "c07": 35, "b06": 60, "c15": 38, "c12": 32, "d02": 26}, "10075206": {"c08": 58, "c11": 200, "c07": 35, "b06": 60, "c15": 38, "c12": 32, "d02": 26}, "10069776": {"c08": 58, "c11": 200, "c07": 35, "b06": 60, "c15": 38, "c12": 32, "d02": 26}, "10068758": {"c08": 58, "c11": 200, "c07": 35, "b06": 60, "c15": 38, "c12": 32, "d02": 26}, "10071708": {"c08": 58, "c11": 200, "c07": 35, "b06": 60, "c15": 38, "c12": 32, "d02": 26}};
+const OPERACE_MAP = {"c08": "protahování", "b02": "krimpování", "c11": "zafoukávání", "c07": "osazování", "b06": "krimpování", "c05": "pájení", "d02": "el. Test", "c15": "kompletace", "c12": "omotávání lepicí páskou"};
+const DEFAULT_VYROBA_DATA = [{"vyroba": "10071766", "postup": "03", "operace": "c08,b02", "norma_ks_hod": "185", "popis": "c08 - protahovn / b02 - krimpovn"}, {"vyroba": "10071766", "postup": "04", "operace": "c11", "norma_ks_hod": "200", "popis": "c11 - zafoukvn"}, {"vyroba": "10071766", "postup": "05", "operace": "c07", "norma_ks_hod": "40", "popis": "c07 - osazovn"}, {"vyroba": "10071766", "postup": "06", "operace": "c07", "norma_ks_hod": "63", "popis": "c07 - osazovn"}, {"vyroba": "10071766", "postup": "07", "operace": "c08", "norma_ks_hod": "53", "popis": "c08 - protahovn"}, {"vyroba": "10071766", "postup": "08", "operace": "c07", "norma_ks_hod": "74", "popis": "c07 - osazovn"}, {"vyroba": "10071766", "postup": "09", "operace": "b06", "norma_ks_hod": "60", "popis": "b06 - krimpovn"}, {"vyroba": "10071766", "postup": "10", "operace": "c08,c05", "norma_ks_hod": "58", "popis": "c08 - protahovn / c05 - pjen"}, {"vyroba": "10071766", "postup": "11", "operace": "c07,d02", "norma_ks_hod": "35", "popis": "c07 - osazovn / d02 -  el. Test"}, {"vyroba": "10071766", "postup": "12", "operace": "c15", "norma_ks_hod": "38", "popis": "c15 - kompletace"}, {"vyroba": "10071766", "postup": "13", "operace": "c12", "norma_ks_hod": "32", "popis": "c12 - omotvn lepc pskou"}, {"vyroba": "10071766", "postup": "14", "operace": "d02", "norma_ks_hod": "26", "popis": "d02 - el. Test"}, {"vyroba": "10072795", "postup": "03", "operace": "c08,b02", "norma_ks_hod": "185", "popis": "c08 - protahovn / b02 - krimpovn"}, {"vyroba": "10072795", "postup": "04", "operace": "c11", "norma_ks_hod": "117", "popis": "c11 - zafoukvn"}, {"vyroba": "10072795", "postup": "05", "operace": "c07", "norma_ks_hod": "34", "popis": "c07 - osazovn"}, {"vyroba": "10072795", "postup": "06", "operace": "c07", "norma_ks_hod": "61", "popis": "c07 - osazovn"}, {"vyroba": "10072795", "postup": "07", "operace": "c08", "norma_ks_hod": "47", "popis": "c08 - protahovn"}, {"vyroba": "10072795", "postup": "08", "operace": "b06", "norma_ks_hod": "60", "popis": "b06 - krimpovn"}, {"vyroba": "10072795", "postup": "09", "operace": "c08,c05", "norma_ks_hod": "61", "popis": "c08 - protahovn / c05 - pjen"}, {"vyroba": "10072795", "postup": "10", "operace": "c07,d02", "norma_ks_hod": "29", "popis": "c07 - osazovn / d02 -  el. Test"}, {"vyroba": "10072795", "postup": "11", "operace": "c15", "norma_ks_hod": "44", "popis": "c15 - kompletace"}, {"vyroba": "10072795", "postup": "12", "operace": "c12", "norma_ks_hod": "34", "popis": "c12 - omotvn lepc pskou"}, {"vyroba": "10072795", "postup": "13", "operace": "d02", "norma_ks_hod": "23", "popis": "d02 - el. Test"}, {"vyroba": "10021113", "postup": "03", "operace": "c08,b02", "norma_ks_hod": "185", "popis": "c08 - protahovn / b02 - krimpovn"}, {"vyroba": "10021113", "postup": "04", "operace": "c11", "norma_ks_hod": "200", "popis": "c11 - zafoukvn"}, {"vyroba": "10021113", "postup": "05", "operace": "c07", "norma_ks_hod": "42", "popis": "c07 - osazovn"}, {"vyroba": "10021113", "postup": "06", "operace": "c07", "norma_ks_hod": "63", "popis": "c07 - osazovn"}, {"vyroba": "10021113", "postup": "07", "operace": "c08", "norma_ks_hod": "50", "popis": "c08 - protahovn"}, {"vyroba": "10021113", "postup": "08", "operace": "c08,c07", "norma_ks_hod": "70", "popis": "c08 - protahovn / c07 - osazovn"}, {"vyroba": "10021113", "postup": "09", "operace": "c11", "norma_ks_hod": "48", "popis": "c11 - zafoukvn"}, {"vyroba": "10021113", "postup": "10", "operace": "b06", "norma_ks_hod": "60", "popis": "b06 - krimpovn"}, {"vyroba": "10021113", "postup": "11", "operace": "c08,c05", "norma_ks_hod": "58", "popis": "c08 - protahovn / c05 - pjen"}, {"vyroba": "10021113", "postup": "12", "operace": "c07,d02", "norma_ks_hod": "35", "popis": "c07 - osazovn / d02 -  el. Test"}, {"vyroba": "10021113", "postup": "13", "operace": "c15", "norma_ks_hod": "38", "popis": "c15 - kompletace"}, {"vyroba": "10021113", "postup": "14", "operace": "c12", "norma_ks_hod": "32", "popis": "c12 - omotvn lepc pskou"}, {"vyroba": "10021113", "postup": "15", "operace": "d02", "norma_ks_hod": "33", "popis": "d02 - el. Test"}];
+
+// Inicializace a načtení dynamických norem a výrob z localStorage, aby se změny ukládaly persistentně
+let NORMY_MAP = JSON.parse(localStorage.getItem('normyMap')) || DEFAULT_NORMY_MAP;
+let VYROBA_DATA = JSON.parse(localStorage.getItem('vyrobaData')) || DEFAULT_VYROBA_DATA;
+
+function saveNormsToStorage() {
+    localStorage.setItem('normyMap', JSON.stringify(NORMY_MAP));
+    localStorage.setItem('vyrobaData', JSON.stringify(VYROBA_DATA));
+}
+
+// Funkce pro aktualizaci doplňování (datalist) zakázek pro operátora
+function updateZakazkyDatalist() {
+    const list = document.getElementById('zakazkyList');
+    list.innerHTML = '';
+    // Posbíráme všechny unikátní zakázky z mapy norem
+    const unikatniZakazky = Object.keys(NORMY_MAP);
+    unikatniZakazky.forEach(z => {
+        list.innerHTML += `<option value="${z}"></option>`;
+    });
+}
+
+function vypocitejEfektivitu(z) {
+    try {
+        const od = z.casOd.split(':'); const do_ = z.casDo.split(':');
+        const minOd = parseInt(od[0])*60 + parseInt(od[1]);
+        const minDo = parseInt(do_[0])*60 + parseInt(do_[1]);
+        const hodiny = (minDo - minOd) / 60;
+        if(hodiny <= 0) return {ksh: 0, norma: 0, eff: 0};
+        const ksh = Math.round(z.kusyOk / hodiny);
+        const norma = NORMY_MAP[z.zakazka]?.[z.operace] || 0;
+        const eff = norma > 0 ? Math.round((ksh / norma) * 100) : 0;
+        return {ksh, norma, eff};
+    } catch(e) { return {ksh: 0, norma: 0, eff: 0}; }
+}
+
+// Vygenerování inputů pro normy v sekci Vytvořit zakázku
+function generateNormInputs() {
+    const container = document.getElementById('newOrderNormsContainer');
+    container.innerHTML = '';
+    Object.keys(OPERACE_MAP).forEach(opCode => {
+        container.innerHTML += `
+            <div>
+                <label class="text-[11px] font-bold text-slate-500">${opCode} - ${OPERACE_MAP[opCode]}</label>
+                <input type="number" data-op="${opCode}" class="input-norm-val w-full p-2 border border-slate-200 rounded-xl text-sm font-semibold" min="0" value="0">
+            </div>
+        `;
+    });
+}
+
+document.getElementById('form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const zaznam = { jmeno: jmeno.value, zakazka: zakazka.value.trim(), operace: operace.value, casOd: casOd.value, casDo: casDo.value, kusyOk: kusyOk.value, kusyNok: kusyNok.value, datum: new Date().toLocaleString('cs-CZ') };
+    const data = JSON.parse(localStorage.getItem('vyroba') || '[]');
+    data.push(zaznam); localStorage.setItem('vyroba', JSON.stringify(data));
+    msg.className = 'mt-4 p-4 rounded-2xl text-center font-bold bg-green-100 text-green-800';
+    msg.textContent = '✓ Uloženo!'; msg.classList.remove('hidden');
+    e.target.reset(); localStorage.setItem('jmeno', zaznam.jmeno);
+    updateZakazkyDatalist();
+    setTimeout(() => msg.classList.add('hidden'), 2000);
+});
+
+// Zpracování formuláře pro tvorbu nové zakázky v adminu
+document.getElementById('createOrderForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const idZakazky = document.getElementById('newOrderInput').value.trim();
+    if (!idZakazky) return;
+
+    // Vytvoříme objekt norem pro danou zakázku
+    const noveNormy = {};
+    const inputs = document.querySelectorAll('.input-norm-val');
+    inputs.forEach(inp => {
+        const op = inp.dataset.op;
+        const val = parseInt(inp.value) || 0;
+        if (val > 0) {
+            noveNormy[op] = val;
+            
+            // Zároveň přidáme zjednodušený záznam do tabulky VYROBA_DATA pro přehled
+            VYROBA_DATA.push({
+                "vyroba": idZakazky,
+                "postup": "01",
+                "operace": op,
+                "norma_ks_hod": val.toString(),
+                "popis": `${op} - ${OPERACE_MAP[op] || ''}`
+            });
+        }
+    });
+
+    NORMY_MAP[idZakazky] = noveNormy;
+    saveNormsToStorage();
+    updateZakazkyDatalist();
+
+    const cMsg = document.getElementById('createMsg');
+    cMsg.className = 'mt-4 p-4 rounded-2xl text-center font-bold bg-green-100 text-green-800';
+    cMsg.textContent = `✓ Zakázka ${idZakazky} byla úspěšně vytvořena a uložena!`;
+    cMsg.classList.remove('hidden');
+    
+    e.target.reset();
+    generateNormInputs();
+    setTimeout(() => cMsg.classList.add('hidden'), 3000);
+});
+
+const ulozeneJmeno = localStorage.getItem('jmeno');
+if(ulozeneJmeno) jmeno.value = ulozeneJmeno;
+
+adminLoginBtn.onclick = () => {
+    loginModal.classList.remove('hidden');
+};
+loginCancel.onclick = () => { loginModal.classList.add('hidden'); adminPass.value = ''; loginError.classList.add('hidden'); };
+loginSubmit.onclick = () => {
+    if(adminPass.value === 'kemm2026') {
+        loginModal.classList.add('hidden'); operatorView.classList.add('hide'); adminView.classList.add('show');
+        adminPass.value = ''; loginError.classList.add('hidden'); loadAdminData();
+    } else loginError.classList.remove('hidden');
+};
+logoutBtn.onclick = () => { adminView.classList.remove('show'); operatorView.classList.remove('hide'); };
+
+document.querySelectorAll('.admin-tab').forEach(btn => {
+    btn.onclick = () => {
+        document.querySelectorAll('.admin-tab').forEach(b => { b.classList.remove('tab-active'); b.classList.add('text-slate-400'); });
+        document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('tab-active'); btn.classList.remove('text-slate-400');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        if(btn.dataset.tab === 'vyroby') loadVyroby();
+        if(btn.dataset.tab === 'vsechny' || btn.dataset.tab === 'karta' || btn.dataset.tab === 'normy') loadAdminData();
+    };
+});
+
+function loadAdminData() {
+    normyTable.innerHTML = ''; 
+    VYROBA_DATA.forEach(r => { 
+        normyTable.innerHTML += `<tr class="border-b hover:bg-slate-50"><td class="py-2 px-3 font-bold">${r.vyroba}</td><td class="py-2 px-3">${r.postup}</td><td class="py-2 px-3 font-mono text-xs">${r.operace}</td><td class="py-2 px-3 text-right font-bold text-blue-600">${r.norma_ks_hod}</td><td class="py-2 px-3 text-slate-600 text-xs">${r.popis}</td></tr>`; 
+    });
+    
+    const zaznamy = JSON.parse(localStorage.getItem('vyroba') || '[]');
+    recordsTable.innerHTML = '';
+    zaznamy.slice().reverse().forEach(z => {
+        const {ksh, norma, eff} = vypocitejEfektivitu(z);
+        let effClass = 'eff-ok'; if(eff >= 100) effClass = 'eff-good'; if(eff < 80) effClass = 'eff-bad';
+        recordsTable.innerHTML += `<tr class="border-b hover:bg-slate-50"><td class="py-2 px-2 text-xs">${z.datum}</td><td class="py-2 px-2 font-bold">${z.jmeno}</td><td class="py-2 px-2">${z.zakazka}</td><td class="py-2 px-2 text-xs">${z.operace} - ${OPERACE_MAP[z.operace] || ''}</td><td class="py-2 px-2 text-xs">${z.casOd}-${z.casDo}</td><td class="py-2 px-2 text-green-600 font-bold">${z.kusyOk}</td><td class="py-2 px-2 text-red-600 font-bold">${z.kusyNok}</td><td class="py-2 px-2 font-bold">${ksh}</td><td class="py-2 px-2 text-blue-600">${norma}</td><td class="py-2 px-2"><span class="eff-badge ${effClass}">${eff}%</span></td></tr>`;
+    });
+    
+    const operatori = [...new Set(zaznamy.map(z => z.jmeno))];
+    selectOperator.innerHTML = '<option value="">Vyber operátora</option>';
+    operatori.forEach(o => { selectOperator.innerHTML += `<option value="${o}">${o}</option>`; });
+}
+
+selectOperator.onchange = (e) => {
+    const jmeno = e.target.value; if(!jmeno) return;
+    const zaznamy = JSON.parse(localStorage.getItem('vyroba') || '[]').filter(z => z.jmeno === jmeno);
+    const celkem = zaznamy.length;
+    const ok = zaznamy.reduce((s,z) => s + parseInt(z.kusyOk || 0), 0);
+    const nok = zaznamy.reduce((s,z) => s + parseInt(z.kusyNok || 0), 0);
+    let celkemEff = 0, pocetEff = 0;
+    zaznamy.forEach(z => { const {eff} = vypocitejEfektivitu(z); if(eff > 0) { celkemEff += eff; pocetEff++; } });
+    const prumEff = pocetEff > 0 ? Math.round(celkemEff / pocetEff) : 0;
+    let effClass = 'eff-ok'; if(prumEff >= 100) effClass = 'eff-good'; if(prumEff < 80) effClass = 'eff-bad';
+    kartaData.innerHTML = `<div class="grid grid-cols-4 gap-3 mb-6"><div class="bg-blue-50 p-3 rounded-xl text-center"><div class="text-2xl font-800 text-blue-600">${celkem}</div><div class="text-[10px] text-slate-500 font-bold uppercase">Záznamů</div></div><div class="bg-green-50 p-3 rounded-xl text-center"><div class="text-2xl font-800 text-green-600">${ok}</div><div class="text-[10px] text-slate-500 font-bold uppercase">OK</div></div><div class="bg-red-50 p-3 rounded-xl text-center"><div class="text-2xl font-800 text-red-600">${nok}</div><div class="text-[10px] text-slate-500 font-bold uppercase">NOK</div></div><div class="bg-purple-50 p-3 rounded-xl text-center"><div class="text-2xl font-800"><span class="eff-badge ${effClass}">${prumEff}%</span></div><div class="text-[10px] text-slate-500 font-bold uppercase">Efektivita</div></div></div><h3 class="font-800 mb-2">Poslední záznamy:</h3>${zaznamy.slice(-10).reverse().map(z => { const {ksh, norma, eff} = vypocitejEfektivitu(z); let eClass = 'eff-ok'; if(eff >= 100) eClass = 'eff-good'; if(eff < 80) eClass = 'eff-bad'; return `<div class="p-3 bg-slate-50 rounded-lg mb-2 text-sm"><div class="flex justify-between items-start mb-1"><strong>${z.zakazka}</strong> | ${z.operace} - ${OPERACE_MAP[z.operace] || ''}<span class="eff-badge ${eClass}">${eff}%</span></div>${z.casOd}-${z.casDo} | OK: ${z.kusyOk} | NOK: ${z.kusyNok} | ${ksh} ks/h (norma ${norma})<br><span class="text-xs text-slate-500">${z.datum}</span></div>`; }).join('')}`;
+};
+
+function loadVyroby() {
+    const zaznamy = JSON.parse(localStorage.getItem('vyroba') || '[]');
+    const vyrobyMap = {};
+    zaznamy.forEach(z => {
+        if(!vyrobyMap[z.zakazka]) vyrobyMap[z.zakazka] = { ok: 0, nok: 0, celkemEff: 0, pocetEff: 0 };
+        vyrobyMap[z.zakazka].ok += parseInt(z.kusyOk || 0);
+        vyrobyMap[z.zakazka].nok += parseInt(z.kusyNok || 0);
+        const {eff} = vypocitejEfektivitu(z);
+        if(eff > 0) { vyrobyMap[z.zakazka].celkemEff += eff; vyrobyMap[z.zakazka].pocetEff++; }
+    });
+
+    const container = document.getElementById('vyrobyKarty');
+    container.innerHTML = '';
+    
+    const filtr = document.getElementById('filtrVyroba').value.toLowerCase();
+
+    Object.keys(vyrobyMap).forEach(zak => {
+        if(filtr && !zak.toLowerCase().includes(filtr)) return;
+        const v = vyrobyMap[zak];
+        const prumEff = v.pocetEff > 0 ? Math.round(v.celkemEff / v.pocetEff) : 0;
+        let effClass = 'eff-ok'; if(prumEff >= 100) effClass = 'eff-good'; if(prumEff < 80) effClass = 'eff-bad';
+        
+        container.innerHTML += `
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-lg font-800 text-slate-900">${zak}</span>
+                    <span class="eff-badge ${effClass}">${prumEff}%</span>
+                </div>
+                <div class="text-xs font-bold text-slate-500">Kusy OK: <span class="text-green-600">${v.ok}</span> | NOK: <span class="text-red-600">${v.nok}</span></div>
+            </div>
+        `;
+    });
+}
+
+document.getElementById('filtrVyroba').addEventListener('input', loadVyroby);
+
+// Export tlačítko
+document.getElementById('exportBtn').onclick = () => {
+    const zaznamy = JSON.parse(localStorage.getItem('vyroba') || '[]');
+    const dataProExport = zaznamy.map(z => {
+        const {ksh, norma, eff} = vypocitejEfektivitu(z);
+        return {
+            "Datum": z.datum,
+            "Jméno": z.jmeno,
+            "Zakázka": z.zakazka,
+            "Operace": z.operace,
+            "Název operace": OPERACE_MAP[z.operace] || '',
+            "Čas od": z.casOd,
+            "Čas do": z.casDo,
+            "Kusy OK": parseInt(z.kusyOk),
+            "Kusy NOK": parseInt(z.kusyNok),
+            "Skutečnost ks/h": ksh,
+            "Norma ks/h": norma,
+            "Efektivita v %": eff
+        };
+    });
+    const ws = XLSX.utils.json_to_sheet(dataProExport);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Výroba");
+    XLSX.writeFile(wb, "KemmSoft_Export_" + new Date().toISOString().slice(0,10) + ".xlsx");
+};
+
+// Prvotní inicializace stránek
+updateZakazkyDatalist();
+generateNormInputs();
+</script>
+</body>
+</html>
